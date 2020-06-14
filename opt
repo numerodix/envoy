@@ -1,0 +1,15 @@
+#include <cstdint>
+
+bool is_healthy(uint64_t healthy, uint64_t degraded, uint64_t total,
+                uint64_t min_healthy_perc) {
+    return ((100UL * (healthy + degraded)) < total * min_healthy_perc);
+}
+
+
+is_healthy(unsigned long, unsigned long, unsigned long, unsigned long):                     # @is_healthy(unsigned long, unsigned long, unsigned long, unsigned long)
+        add     rdi, rsi
+        imul    rax, rdi, 100
+        imul    rdx, rcx
+        cmp     rax, rdx
+        setb    al
+        ret

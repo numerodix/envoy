@@ -1,0 +1,12 @@
+bool is_healthy(uint64_t healthy, uint64_t degraded, uint64_t total,
+                double min_healthy_perc) {
+    return ((healthy + degraded) < total * min_healthy_perc / 100.0);
+}
+
+
+
+
+bool is_healthy(uint64_t healthy, uint64_t degraded, uint64_t total,
+                uint64_t min_healthy_perc) {
+    return ((100UL * (healthy + degraded)) < total * min_healthy_perc);
+}

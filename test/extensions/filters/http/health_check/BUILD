@@ -1,6 +1,7 @@
 load(
     "//bazel:envoy_build_system.bzl",
     "envoy_package",
+    "envoy_cc_test_binary",
 )
 load(
     "//test/extensions:extensions_build_system.bzl",
@@ -15,6 +16,24 @@ envoy_extension_cc_test(
     name = "health_check_test",
     srcs = ["health_check_test.cc"],
     extension_name = "envoy.filters.http.health_check",
+    deps = [
+        "//source/common/buffer:buffer_lib",
+        "//source/common/http:header_utility_lib",
+        "//source/extensions/filters/http/health_check:health_check_lib",
+        "//test/mocks/server:server_mocks",
+        "//test/test_common:utility_lib",
+        "@envoy_api//envoy/config/route/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_test_binary(
+    name = "health_check_speed_test",
+    srcs = ["health_check_speed_test.cc"],
+#    extension_name = "envoy.filters.http.health_check",
+    external_deps = [
+        "benchmark",
+        "googletest",
+    ],
     deps = [
         "//source/common/buffer:buffer_lib",
         "//source/common/http:header_utility_lib",
