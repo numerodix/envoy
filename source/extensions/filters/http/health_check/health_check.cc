@@ -160,6 +160,8 @@ void HealthCheckFilter::onComplete() {
         // specified percentage of the servers in the cluster are available (healthy + degraded).
         // TODO(brian-pane) switch to purely integer-based math here, because the
         //                  int-to-float conversions and floating point division are slow.
+        // if ((stats.membership_healthy_.value() + stats.membership_degraded_.value()) <
+        //     membership_total * min_healthy_percentage / 100.0) {
         if ((100UL * (stats.membership_healthy_.value() + stats.membership_degraded_.value())) <
             membership_total * min_healthy_percentage) {
           final_status = Http::Code::ServiceUnavailable;

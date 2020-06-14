@@ -10,3 +10,16 @@ bool is_healthy(uint64_t healthy, uint64_t degraded, uint64_t total,
                 uint64_t min_healthy_perc) {
     return ((100UL * (healthy + degraded)) < total * min_healthy_perc);
 }
+
+
+orig:
+BM_DecodeHeaders_mean        60887 ns        60886 ns          100
+BM_DecodeHeaders_median      60742 ns        60741 ns          100
+BM_DecodeHeaders_stddev        655 ns          655 ns          100
+
+
+opt:
+BM_DecodeHeaders_mean        60682 ns        60680 ns          100
+BM_DecodeHeaders_median      60552 ns        60548 ns          100
+BM_DecodeHeaders_stddev        639 ns          638 ns          100
+
