@@ -29,7 +29,6 @@ envoy_extension_cc_test(
 envoy_cc_test_binary(
     name = "health_check_speed_test",
     srcs = ["health_check_speed_test.cc"],
-#    extension_name = "envoy.filters.http.health_check",
     external_deps = [
         "benchmark",
         "googletest",
