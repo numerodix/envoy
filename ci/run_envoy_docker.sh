@@ -31,4 +31,4 @@ docker run --rm ${ENVOY_DOCKER_OPTIONS} -e HTTP_PROXY=${http_proxy} -e HTTPS_PRO
   -e GCS_ARTIFACT_BUCKET -e BUILD_SOURCEBRANCHNAME -e BAZELISK_BASE_URL \
   -v "$PWD":/source --cap-add SYS_PTRACE --cap-add NET_RAW --cap-add NET_ADMIN "${ENVOY_BUILD_IMAGE}" \
   /bin/bash -lc "groupadd --gid $(id -g) -f envoygroup && useradd -o --uid $(id -u) --gid $(id -g) --no-create-home \
-  --home-dir /build envoybuild && usermod -a -G pcap envoybuild && sudo -EHs -u envoybuild bash -c \"cd /source && $*\""
+  --home-dir /build envoybuild && usermod -a -G pcap envoybuild && chown envoybuild -R /build && sudo -EHs -u envoybuild bash -c \"cd /source && $*\""

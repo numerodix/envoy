@@ -14,6 +14,7 @@
 #include "common/http/headers.h"
 #include "common/http/utility.h"
 #include "common/protobuf/utility.h"
+#include "common/runtime/runtime_features.h"
 
 namespace Envoy {
 namespace Extensions {
@@ -134,7 +135,7 @@ void HealthCheckFilter::onComplete() {
       for (const auto& item : *cluster_min_healthy_percentages_) {
         details = &RcDetails::get().HealthCheckClusterHealthy;
         const std::string& cluster_name = item.first;
-        const uint64_t min_healthy_percentage = static_cast<uint64_t>(item.second);
+        const double min_healthy_percentage = item.second;
         auto* cluster = clusterManager.get(cluster_name);
         if (cluster == nullptr) {
           // If the cluster does not exist at all, consider the service unhealthy.
@@ -148,7 +149,7 @@ void HealthCheckFilter::onComplete() {
         if (membership_total == 0) {
           // If the cluster exists but is empty, consider the service unhealthy unless
           // the specified minimum percent healthy for the cluster happens to be zero.
-          if (min_healthy_percentage == 0UL) {
+          if (min_healthy_percentage == 0.0) {
             continue;
           } else {
             final_status = Http::Code::ServiceUnavailable;
@@ -158,8 +159,8 @@ void HealthCheckFilter::onComplete() {
         }
         // In the general case, consider the service unhealthy if fewer than the
         // specified percentage of the servers in the cluster are available (healthy + degraded).
-        if ((100UL * (stats.membership_healthy_.value() + stats.membership_degraded_.value())) <
-            membership_total * min_healthy_percentage) {
+        if (isUnhealthy(stats.membership_healthy_.value(), stats.membership_degraded_.value(),
+                        membership_total, min_healthy_percentage)) {
           final_status = Http::Code::ServiceUnavailable;
           details = &RcDetails::get().HealthCheckClusterUnhealthy;
           break;
@@ -180,6 +181,16 @@ void HealthCheckFilter::onComplete() {
         }
       },
       absl::nullopt, *details);
+}
+
+bool HealthCheckFilter::isUnhealthy(uint64_t healthy, uint64_t degraded, uint64_t total,
+                                    double min_healthy_percentage) {
+  if (Runtime::runtimeFeatureEnabled(
+          "envoy.reloadable_features.health_check_interpret_min_healthy_percentage_as_integer")) {
+    return 100UL * (healthy + degraded) < total * static_cast<uint64_t>(min_healthy_percentage);
+  } else {
+    return healthy + degraded < total * min_healthy_percentage / 100.0;
+  }
 }
 
 } // namespace HealthCheck

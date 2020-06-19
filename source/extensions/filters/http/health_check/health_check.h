@@ -99,6 +99,8 @@ public:
 
 private:
   void onComplete();
+  bool isUnhealthy(uint64_t healthy, uint64_t degraded, uint64_t total,
+                   double min_healthy_percentage);
 
   Server::Configuration::FactoryContext& context_;
   Http::StreamDecoderFilterCallbacks* callbacks_{};
