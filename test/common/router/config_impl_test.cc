@@ -3227,7 +3227,7 @@ virtual_hosts:
       cluster: www2
       retry_policy:
         per_try_timeout: 1s
-        num_retries: 3
+        max_retries: 3
         retry_on: 5xx,gateway-error,connect-failure,reset
   )EOF";
 
@@ -3286,7 +3286,7 @@ virtual_hosts:
 - domains: [www.lyft.com]
   per_request_buffer_limit_bytes: 8
   name: www
-  retry_policy: {num_retries: 3, per_try_timeout: 1s, retry_on: '5xx,gateway-error,connect-failure,reset'}
+  retry_policy: {max_retries: 3, per_try_timeout: 1s, retry_on: '5xx,gateway-error,connect-failure,reset'}
   routes:
   - match: {prefix: /foo}
     per_request_buffer_limit_bytes: 7
@@ -3379,7 +3379,7 @@ virtual_hosts:
       cluster: www2
       retry_policy:
         per_try_timeout: 1s
-        num_retries: 3
+        max_retries: 3
         retry_on: 5xx,deadline-exceeded,resource-exhausted
   )EOF";
 

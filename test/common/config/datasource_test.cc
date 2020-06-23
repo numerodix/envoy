@@ -406,7 +406,7 @@ TEST_F(AsyncDataSourceTest, LoadRemoteDataSourceWithRetry) {
       retry_policy:
         retry_back_off:
           base_interval: 1s
-        num_retries: 3
+        max_retries: 3
   )EOF";
   TestUtility::loadFromYamlAndValidate(yaml, config);
   EXPECT_TRUE(config.has_remote());

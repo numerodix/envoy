@@ -46,7 +46,7 @@ RemoteAsyncDataProvider::RemoteAsyncDataProvider(
                                                                         source.sha256(), *this)),
       init_target_("RemoteAsyncDataProvider", [this]() { start(); }),
       retries_remaining_(
-          PROTOBUF_GET_WRAPPED_OR_DEFAULT(source.retry_policy(), num_retries, RetryCount)) {
+          PROTOBUF_GET_WRAPPED_OR_DEFAULT(source.retry_policy(), max_retries, RetryCount)) {
 
   uint64_t base_interval_ms = RetryInitialDelayMilliseconds;
   uint64_t max_interval_ms = RetryMaxDelayMilliseconds;
