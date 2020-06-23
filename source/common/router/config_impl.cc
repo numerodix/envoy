@@ -69,7 +69,7 @@ RetryPolicyImpl::RetryPolicyImpl(const envoy::config::route::v3::RetryPolicy& re
       validation_visitor_(&validation_visitor) {
   per_try_timeout_ =
       std::chrono::milliseconds(PROTOBUF_GET_MS_OR_DEFAULT(retry_policy, per_try_timeout, 0));
-  num_retries_ = PROTOBUF_GET_WRAPPED_OR_DEFAULT(retry_policy, max_retries, 1);
+  max_retries_ = PROTOBUF_GET_WRAPPED_OR_DEFAULT(retry_policy, max_retries, 1);
   retry_on_ = RetryStateImpl::parseRetryOn(retry_policy.retry_on()).first;
   retry_on_ |= RetryStateImpl::parseRetryGrpcOn(retry_policy.retry_on()).first;
 
@@ -125,7 +125,7 @@ std::vector<Upstream::RetryHostPredicateSharedPtr> RetryPolicyImpl::retryHostPre
   std::vector<Upstream::RetryHostPredicateSharedPtr> predicates;
 
   for (const auto& config : retry_host_predicate_configs_) {
-    predicates.emplace_back(config.first.createHostPredicate(*config.second, num_retries_));
+    predicates.emplace_back(config.first.createHostPredicate(*config.second, max_retries_));
   }
 
   return predicates;
@@ -137,7 +137,7 @@ Upstream::RetryPrioritySharedPtr RetryPolicyImpl::retryPriority() const {
   }
 
   return retry_priority_config_.first->createRetryPriority(*retry_priority_config_.second,
-                                                           *validation_visitor_, num_retries_);
+                                                           *validation_visitor_, max_retries_);
 }
 
 InternalRedirectPolicyImpl::InternalRedirectPolicyImpl(

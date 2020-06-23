@@ -58,7 +58,7 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
                                Event::Dispatcher& dispatcher, Upstream::ResourcePriority priority)
     : cluster_(cluster), vcluster_(vcluster), runtime_(runtime), random_(random),
       dispatcher_(dispatcher), retry_on_(route_policy.retryOn()),
-      retries_remaining_(route_policy.numRetries()), priority_(priority),
+      retries_remaining_(route_policy.maxRetries()), priority_(priority),
       retry_host_predicates_(route_policy.retryHostPredicates()),
       retry_priority_(route_policy.retryPriority()),
       retriable_status_codes_(route_policy.retriableStatusCodes()),

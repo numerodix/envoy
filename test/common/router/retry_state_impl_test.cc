@@ -714,7 +714,7 @@ TEST_F(RouterRetryStateImplTest, PolicyLimitedByRequestHeaders) {
 }
 
 TEST_F(RouterRetryStateImplTest, RouteConfigNoRetriesAllowed) {
-  policy_.num_retries_ = 0;
+  policy_.max_retries_ = 0;
   policy_.retry_on_ = RetryPolicy::RETRY_ON_CONNECT_FAILURE;
   setup();
 
@@ -729,7 +729,7 @@ TEST_F(RouterRetryStateImplTest, RouteConfigNoRetriesAllowed) {
 }
 
 TEST_F(RouterRetryStateImplTest, RouteConfigNoHeaderConfig) {
-  policy_.num_retries_ = 1;
+  policy_.max_retries_ = 1;
   policy_.retry_on_ = RetryPolicy::RETRY_ON_CONNECT_FAILURE;
   Http::TestRequestHeaderMapImpl request_headers;
   setup(request_headers);
@@ -755,7 +755,7 @@ TEST_F(RouterRetryStateImplTest, NoAvailableRetries) {
 
 TEST_F(RouterRetryStateImplTest, MaxRetriesHeader) {
   // The max retries header will take precedence over the policy
-  policy_.num_retries_ = 4;
+  policy_.max_retries_ = 4;
   Http::TestRequestHeaderMapImpl request_headers{{"x-envoy-retry-on", "connect-failure"},
                                                  {"x-envoy-retry-grpc-on", "cancelled"},
                                                  {"x-envoy-max-retries", "3"}};
@@ -793,7 +793,7 @@ TEST_F(RouterRetryStateImplTest, MaxRetriesHeader) {
 }
 
 TEST_F(RouterRetryStateImplTest, Backoff) {
-  policy_.num_retries_ = 3;
+  policy_.max_retries_ = 3;
   policy_.retry_on_ = RetryPolicy::RETRY_ON_CONNECT_FAILURE;
   Http::TestRequestHeaderMapImpl request_headers;
   setup(request_headers);
@@ -830,7 +830,7 @@ TEST_F(RouterRetryStateImplTest, Backoff) {
 
 // Test customized retry back-off intervals.
 TEST_F(RouterRetryStateImplTest, CustomBackOffInterval) {
-  policy_.num_retries_ = 10;
+  policy_.max_retries_ = 10;
   policy_.retry_on_ = RetryPolicy::RETRY_ON_CONNECT_FAILURE;
   policy_.base_interval_ = std::chrono::milliseconds(100);
   policy_.max_interval_ = std::chrono::milliseconds(1200);
@@ -872,7 +872,7 @@ TEST_F(RouterRetryStateImplTest, CustomBackOffInterval) {
 
 // Test the default maximum retry back-off interval.
 TEST_F(RouterRetryStateImplTest, CustomBackOffIntervalDefaultMax) {
-  policy_.num_retries_ = 10;
+  policy_.max_retries_ = 10;
   policy_.retry_on_ = RetryPolicy::RETRY_ON_CONNECT_FAILURE;
   policy_.base_interval_ = std::chrono::milliseconds(100);
   Http::TestRequestHeaderMapImpl request_headers;

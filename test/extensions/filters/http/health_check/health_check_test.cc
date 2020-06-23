@@ -140,7 +140,7 @@ TEST_F(HealthCheckFilterNoPassThroughTest, ComputedHealth) {
 
   // Test non-pass-through health checks with upstream cluster minimum health specified.
   prepareFilter(false, ClusterMinHealthyPercentagesConstSharedPtr(
-                           new ClusterMinHealthyPercentages{{"www1", 50.0}, {"www2", 75.0}}));
+                           new ClusterMinHealthyPercentages{{"www1", 50.95}, {"www2", 75.0}}));
   {
     // This should pass, because each upstream cluster has at least the
     // minimum percentage of healthy servers.

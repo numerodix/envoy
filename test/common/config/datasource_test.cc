@@ -42,7 +42,7 @@ protected:
       Http::RequestMessagePtr&, Http::AsyncClient::Callbacks&,
       const Http::AsyncClient::RequestOptions)>;
 
-  void initialize(AsyncClientSendFunc func, int num_retries = 1) {
+  void initialize(AsyncClientSendFunc func, int max_retries = 1) {
     retry_timer_ = new Event::MockTimer();
     EXPECT_CALL(init_manager_, add(_)).WillOnce(Invoke([this](const Init::Target& target) {
       init_target_handle_ = target.createHandle("test");
@@ -58,11 +58,11 @@ protected:
         .WillRepeatedly(ReturnRef(cm_.async_client_));
 
     EXPECT_CALL(*retry_timer_, disableTimer());
-    if (num_retries == 1) {
+    if (max_retries == 1) {
       EXPECT_CALL(cm_.async_client_, send_(_, _, _)).Times(AtLeast(1)).WillRepeatedly(Invoke(func));
     } else {
       EXPECT_CALL(cm_.async_client_, send_(_, _, _))
-          .Times(num_retries)
+          .Times(max_retries)
           .WillRepeatedly(Invoke(func));
     }
   }
@@ -412,7 +412,7 @@ TEST_F(AsyncDataSourceTest, LoadRemoteDataSourceWithRetry) {
   EXPECT_TRUE(config.has_remote());
 
   const std::string body = "hello world";
-  int num_retries = 3;
+  int max_retries = 3;
 
   initialize(
       [&](Http::RequestMessagePtr&, Http::AsyncClient::Callbacks& callbacks,
@@ -423,7 +423,7 @@ TEST_F(AsyncDataSourceTest, LoadRemoteDataSourceWithRetry) {
                 new Http::TestResponseHeaderMapImpl{{":status", "503"}}})});
         return nullptr;
       },
-      num_retries);
+      max_retries);
 
   std::string async_data = "non-empty";
   remote_data_provider_ = std::make_unique<Config::DataSource::RemoteAsyncDataProvider>(
@@ -438,7 +438,7 @@ TEST_F(AsyncDataSourceTest, LoadRemoteDataSourceWithRetry) {
   EXPECT_CALL(init_watcher_, ready());
   EXPECT_CALL(*retry_timer_, enableTimer(_, _))
       .WillRepeatedly(Invoke([&](const std::chrono::milliseconds&, const ScopeTrackedObject*) {
-        if (--num_retries == 0) {
+        if (--max_retries == 0) {
           EXPECT_CALL(cm_.async_client_, send_(_, _, _))
               .WillOnce(Invoke(
                   [&](Http::RequestMessagePtr&, Http::AsyncClient::Callbacks& callbacks,
@@ -475,7 +475,7 @@ TEST_F(AsyncDataSourceTest, BaseIntervalGreaterThanMaxInterval) {
         retry_back_off:
           base_interval: 10s
           max_interval: 1s
-        num_retries: 3
+        max_retries: 3
   )EOF";
   TestUtility::loadFromYamlAndValidate(yaml, config);
   EXPECT_TRUE(config.has_remote());
@@ -501,7 +501,7 @@ TEST_F(AsyncDataSourceTest, BaseIntervalTest) {
       retry_policy:
         retry_back_off:
           base_interval: 0.0001s
-        num_retries: 3
+        max_retries: 3
   )EOF";
   EXPECT_THROW(TestUtility::loadFromYamlAndValidate(yaml, config), EnvoyException);
 }

@@ -102,7 +102,7 @@ public:
 
   // Router::RetryPolicy
   std::chrono::milliseconds perTryTimeout() const override { return per_try_timeout_; }
-  uint32_t numRetries() const override { return num_retries_; }
+  uint32_t maxRetries() const override { return max_retries_; }
   uint32_t retryOn() const override { return retry_on_; }
   MOCK_METHOD(std::vector<Upstream::RetryHostPredicateSharedPtr>, retryHostPredicates, (), (const));
   MOCK_METHOD(Upstream::RetryPrioritySharedPtr, retryPriority, (), (const));
@@ -121,7 +121,7 @@ public:
   absl::optional<std::chrono::milliseconds> maxInterval() const override { return max_interval_; }
 
   std::chrono::milliseconds per_try_timeout_{0};
-  uint32_t num_retries_{};
+  uint32_t max_retries_{};
   uint32_t retry_on_{};
   uint32_t host_selection_max_attempts_;
   std::vector<uint32_t> retriable_status_codes_;
