@@ -1002,7 +1002,7 @@ message RouteAction {
 }
 
 // HTTP retry :ref:`architecture overview <arch_overview_http_routing_retry>`.
-// [#next-free-field: 11]
+// [#next-free-field: 12]
 message RetryPolicy {
   option (udpa.annotations.versioning).previous_message_type = "envoy.config.route.v3.RetryPolicy";
 
@@ -1056,6 +1056,10 @@ message RetryPolicy {
     google.protobuf.Duration max_interval = 2 [(validate.rules).duration = {gt {}}];
   }
 
+  reserved 2;
+
+  reserved "num_retries";
+
   // Specifies the conditions under which retry takes place. These are the same
   // conditions documented for :ref:`config_http_filters_router_x-envoy-retry-on` and
   // :ref:`config_http_filters_router_x-envoy-retry-grpc-on`.
@@ -1064,7 +1068,7 @@ message RetryPolicy {
   // Specifies the allowed number of retries. This parameter is optional and
   // defaults to 1. These are the same conditions documented for
   // :ref:`config_http_filters_router_x-envoy-max-retries`.
-  google.protobuf.UInt32Value num_retries = 2;
+  google.protobuf.UInt32Value max_retries = 11;
 
   // Specifies a non-zero upstream timeout per retry attempt. This parameter is optional. The
   // same conditions documented for

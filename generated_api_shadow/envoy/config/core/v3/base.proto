@@ -330,7 +330,14 @@ message RetryPolicy {
 
   // Specifies the allowed number of retries. This parameter is optional and
   // defaults to 1.
-  google.protobuf.UInt32Value num_retries = 2;
+  // This field is deprecated. Use :ref:`max_retries
+  // <envoy_api_field_config.core.v3.RetryPolicy.max_retries>`
+  // instead.
+  google.protobuf.UInt32Value num_retries = 2 [deprecated = true];
+
+  // Specifies the allowed number of retries. This parameter is optional and
+  // defaults to 1.
+  google.protobuf.UInt32Value max_retries = 3;
 }
 
 // The message specifies how to fetch data from remote and how to verify it.

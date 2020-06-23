@@ -325,6 +325,10 @@ message DataSource {
 message RetryPolicy {
   option (udpa.annotations.versioning).previous_message_type = "envoy.config.core.v3.RetryPolicy";
 
+  reserved 2;
+
+  reserved "num_retries";
+
   // Specifies parameters that control :ref:`retry backoff strategy <envoy_api_msg_config.core.v4alpha.BackoffStrategy>`.
   // This parameter is optional, in which case the default base interval is 1000 milliseconds. The
   // default maximum interval is 10 times the base interval.
@@ -332,7 +336,7 @@ message RetryPolicy {
 
   // Specifies the allowed number of retries. This parameter is optional and
   // defaults to 1.
-  google.protobuf.UInt32Value num_retries = 2;
+  google.protobuf.UInt32Value max_retries = 3;
 }
 
 // The message specifies how to fetch data from remote and how to verify it.
