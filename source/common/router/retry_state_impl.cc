@@ -48,6 +48,8 @@ RetryStateImpl::create(const RetryPolicy& route_policy, Http::RequestHeaderMap& 
   request_headers.removeEnvoyRetryOn();
   request_headers.removeEnvoyRetryGrpcOn();
   request_headers.removeEnvoyMaxRetries();
+  request_headers.removeEnvoyRetriableHeaderNames();
+  request_headers.removeEnvoyRetriableStatusCodes();
   return ret;
 }
 

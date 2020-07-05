@@ -141,6 +141,34 @@ public:
   const Http::StreamResetReason connect_failure_{Http::StreamResetReason::ConnectionFailure};
 };
 
+TEST_F(RouterRetryStateImplTest, AlwaysRemoveRetryHeaders) {
+  // Make sure retry related headers are removed when the policy is enabled.
+  {
+    Http::TestRequestHeaderMapImpl request_headers{{"x-envoy-retry-on", "5xx"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    EXPECT_FALSE(request_headers.has("x-envoy-retry-on"));
+    EXPECT_FALSE(request_headers.has("x-envoy-retry-grpc-on"));
+    EXPECT_FALSE(request_headers.has("x-envoy-max-retries"));
+    EXPECT_FALSE(request_headers.has("x-envoy-retriable-header-names"));
+    EXPECT_FALSE(request_headers.has("x-envoy-retriable-status-codes"));
+  }
+
+  // Make sure retry related headers are removed even if the policy is disabled.
+  {
+    Http::TestRequestHeaderMapImpl request_headers;
+    setup(request_headers);
+    EXPECT_EQ(nullptr, state_);
+
+    EXPECT_FALSE(request_headers.has("x-envoy-retry-on"));
+    EXPECT_FALSE(request_headers.has("x-envoy-retry-grpc-on"));
+    EXPECT_FALSE(request_headers.has("x-envoy-max-retries"));
+    EXPECT_FALSE(request_headers.has("x-envoy-retriable-header-names"));
+    EXPECT_FALSE(request_headers.has("x-envoy-retriable-status-codes"));
+  }
+}
+
 TEST_F(RouterRetryStateImplTest, PolicyNoneRemoteReset) {
   Http::TestRequestHeaderMapImpl request_headers;
   setup(request_headers);
