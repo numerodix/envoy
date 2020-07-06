@@ -308,7 +308,7 @@ private:
   HEADER_FUNC(EnvoyUpstreamHealthCheckedCluster)                                                   \
   HEADER_FUNC(EnvoyUpstreamServiceTime)                                                            \
   HEADER_FUNC(Location)                                                                            \
-  HEADER_FUNC(RetryAfter)                                                                           \
+  HEADER_FUNC(RetryAfter)                                                                          \
   HEADER_FUNC(Server)                                                                              \
   HEADER_FUNC(Status)
 
