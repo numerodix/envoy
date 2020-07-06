@@ -146,10 +146,14 @@ RetryStateImpl::~RetryStateImpl() { resetRetry(); }
 
 void RetryStateImpl::enableBackoffTimer() {
   if (!retry_timer_) {
-    retry_timer_ = dispatcher_.createTimer([this]() -> void { callback_(); });
+    retry_timer_ = dispatcher_.createTimer([this]() -> void {
+      printf("Invoking callback_ now!\n");
+      callback_();
+    });
   }
 
-  // What happens if we set the timer for longer than it takes the timeout to kick in?
+  // Q. What happens if we set the timer for longer than it takes the timeout to kick in?
+  // A. Looks like the timer never fires - timeout prevents it (good!)
   printf("Setting timer\n");
   if (retry_after_duration_) {
     retry_timer_->enableTimer(std::chrono::milliseconds(retry_after_duration_));
