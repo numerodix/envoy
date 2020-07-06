@@ -149,8 +149,14 @@ void RetryStateImpl::enableBackoffTimer() {
     retry_timer_ = dispatcher_.createTimer([this]() -> void { callback_(); });
   }
 
-  // We use a fully jittered exponential backoff algorithm.
-  retry_timer_->enableTimer(std::chrono::milliseconds(backoff_strategy_->nextBackOffMs()));
+  // What happens if we set the timer for longer than it takes the timeout to kick in?
+  printf("Setting timer\n");
+  if (retry_after_duration_) {
+    retry_timer_->enableTimer(std::chrono::milliseconds(retry_after_duration_));
+  } else {
+    // We use a fully jittered exponential backoff algorithm.
+    retry_timer_->enableTimer(std::chrono::milliseconds(backoff_strategy_->nextBackOffMs()));
+  }
 }
 
 std::pair<uint32_t, bool> RetryStateImpl::parseRetryOn(absl::string_view config) {
@@ -300,8 +306,13 @@ bool RetryStateImpl::wouldRetryFromHeaders(const Http::ResponseHeaderMap& respon
 
   if (response_headers.RetryAfter() != nullptr) {
     const auto retry_after = (*response_headers.RetryAfter()).value().getStringView();
-    printf("Found retry-after: %.*s\n", static_cast<int>(retry_after.size()), retry_after.data());
-  } else {
+    unsigned int out;
+    if (absl::SimpleAtoi(retry_after, &out) && (out > 0UL)) {
+      retry_after_duration_ = out * 1000UL;
+      printf("Found retry-after: %lu\n", retry_after_duration_);
+    }
+  }
+  if (retry_after_duration_ == 0) { // else
     printf("Did not find retry-after\n");
   }
 

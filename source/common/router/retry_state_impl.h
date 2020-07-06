@@ -105,6 +105,7 @@ private:
   Event::Dispatcher& dispatcher_;
   uint32_t retry_on_{};
   uint32_t retries_remaining_{};
+  uint64_t retry_after_duration_{};
   DoRetryCallback callback_;
   Event::TimerPtr retry_timer_;
   Upstream::ResourcePriority priority_;
