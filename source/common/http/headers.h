@@ -192,6 +192,7 @@ public:
   const LowerCaseString Protocol{":protocol"};
   const LowerCaseString ProxyConnection{"proxy-connection"};
   const LowerCaseString RequestId{"x-request-id"};
+  const LowerCaseString RetryAfter{"retry-after"};
   const LowerCaseString Scheme{":scheme"};
   const LowerCaseString Server{"server"};
   const LowerCaseString SetCookie{"set-cookie"};

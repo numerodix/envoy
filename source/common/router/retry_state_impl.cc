@@ -298,6 +298,13 @@ bool RetryStateImpl::wouldRetryFromHeaders(const Http::ResponseHeaderMap& respon
   }
   printf("Can retry - did not find x-envoy-ratelimited\n");
 
+  if (response_headers.RetryAfter() != nullptr) {
+    const auto retry_after = (*response_headers.RetryAfter()).value().getStringView();
+    printf("Found retry-after: %.*s\n", static_cast<int>(retry_after.size()), retry_after.data());
+  } else {
+    printf("Did not find retry-after\n");
+  }
+
   if (retry_on_ & RetryPolicy::RETRY_ON_5XX) {
     if (Http::CodeUtility::is5xx(Http::Utility::getResponseStatus(response_headers))) {
       return true;
