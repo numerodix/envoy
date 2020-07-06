@@ -257,6 +257,7 @@ public:
     const std::string RetriableStatusCodes{"retriable-status-codes"};
     const std::string RetriableHeaders{"retriable-headers"};
     const std::string Reset{"reset"};
+    const std::string RateLimited{"rate-limited"};
   } EnvoyRetryOnValues;
 
   struct {

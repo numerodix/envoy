@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <cstdint>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -26,6 +27,7 @@ const uint32_t RetryPolicy::RETRY_ON_RETRIABLE_4XX;
 const uint32_t RetryPolicy::RETRY_ON_RETRIABLE_HEADERS;
 const uint32_t RetryPolicy::RETRY_ON_RETRIABLE_STATUS_CODES;
 const uint32_t RetryPolicy::RETRY_ON_RESET;
+const uint32_t RetryPolicy::RETRY_ON_RATE_LIMITED;
 const uint32_t RetryPolicy::RETRY_ON_GRPC_CANCELLED;
 const uint32_t RetryPolicy::RETRY_ON_GRPC_DEADLINE_EXCEEDED;
 const uint32_t RetryPolicy::RETRY_ON_GRPC_RESOURCE_EXHAUSTED;
@@ -171,6 +173,8 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryOn(absl::string_view config)
       ret |= RetryPolicy::RETRY_ON_RETRIABLE_HEADERS;
     } else if (retry_on == Http::Headers::get().EnvoyRetryOnValues.Reset) {
       ret |= RetryPolicy::RETRY_ON_RESET;
+    } else if (retry_on == Http::Headers::get().EnvoyRetryOnValues.RateLimited) {
+      ret |= RetryPolicy::RETRY_ON_RATE_LIMITED;
     } else {
       all_fields_valid = false;
     }
@@ -283,9 +287,16 @@ RetryStatus RetryStateImpl::shouldHedgeRetryPerTryTimeout(DoRetryCallback callba
 
 bool RetryStateImpl::wouldRetryFromHeaders(const Http::ResponseHeaderMap& response_headers) {
   // We never retry if the request is rate limited.
-  if (response_headers.EnvoyRateLimited() != nullptr) {
+  // if (response_headers.EnvoyRateLimited() != nullptr) {
+
+  if (!(retry_on_ & RetryPolicy::RETRY_ON_RATE_LIMITED) &&
+      (response_headers.EnvoyRateLimited() != nullptr)) {
+
+    printf("retry_on_: %x\n", retry_on_);
+    printf("Not retrying because found x-envoy-ratelimited\n");
     return false;
   }
+  printf("Can retry - did not find x-envoy-ratelimited\n");
 
   if (retry_on_ & RetryPolicy::RETRY_ON_5XX) {
     if (Http::CodeUtility::is5xx(Http::Utility::getResponseStatus(response_headers))) {
