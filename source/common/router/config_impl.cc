@@ -120,6 +120,15 @@ RetryPolicyImpl::RetryPolicyImpl(const envoy::config::route::v3::RetryPolicy& re
       }
     }
   }
+
+  if (retry_policy.has_rate_limited_back_off()) {
+
+    reset_max_delay_ = std::chrono::milliseconds(
+        PROTOBUF_GET_MS_REQUIRED(retry_policy.rate_limited_back_off(), reset_max_delay));
+    if ((*reset_max_delay_).count() < 1) {
+      reset_max_delay_ = std::chrono::milliseconds(60000);
+    }
+  }
 }
 
 std::vector<Upstream::RetryHostPredicateSharedPtr> RetryPolicyImpl::retryHostPredicates() const {

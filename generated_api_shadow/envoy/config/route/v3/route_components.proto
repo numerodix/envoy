@@ -1093,9 +1093,9 @@ message RetryPolicy {
   }
 
   message RateLimitedBackOff {
-    string rate_limited_reset_headers = 1;
+    string reset_headers = 1;
 
-    google.protobuf.Duration rate_limited_reset_max_delay = 2 [(validate.rules).duration = {gt {}}];
+    google.protobuf.Duration reset_max_delay = 2 [(validate.rules).duration = {gt {}}];
   }
 
   // Specifies the conditions under which retry takes place. These are the same
