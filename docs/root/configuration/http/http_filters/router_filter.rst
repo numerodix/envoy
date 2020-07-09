@@ -117,6 +117,10 @@ retriable-headers
   :ref:`the retry policy <envoy_v3_api_field_config.route.v3.RetryPolicy.retriable_headers>` or in the
   :ref:`config_http_filters_router_x-envoy-retriable-header-names` header.
 
+envoy-ratelimited
+  Envoy will retry if the header :ref:`x-envoy-ratelimited<config_http_filters_router_x-envoy-ratelimited>`
+  is present.
+
 The number of retries can be controlled via the
 :ref:`config_http_filters_router_x-envoy-max-retries` header or via the :ref:`route
 configuration <envoy_v3_api_field_config.route.v3.RouteAction.retry_policy>` or via the
@@ -294,7 +298,7 @@ information.
 x-envoy-ratelimited
 ^^^^^^^^^^^^^^^^^^^
 
-If this header is set by upstream, Envoy will not retry. Currently the value of the header is not
+If this header is set by upstream, Envoy will not retry by default. Currently, the value of the header is not
 looked at, only its presence. This header is set by :ref:`rate limit filter<config_http_filters_rate_limit>`
 when the request is rate limited.
 

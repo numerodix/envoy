@@ -23,6 +23,7 @@ namespace Router {
 const uint32_t RetryPolicy::RETRY_ON_5XX;
 const uint32_t RetryPolicy::RETRY_ON_GATEWAY_ERROR;
 const uint32_t RetryPolicy::RETRY_ON_CONNECT_FAILURE;
+const uint32_t RetryPolicy::RETRY_ON_ENVOY_RATELIMITED;
 const uint32_t RetryPolicy::RETRY_ON_RETRIABLE_4XX;
 const uint32_t RetryPolicy::RETRY_ON_RETRIABLE_HEADERS;
 const uint32_t RetryPolicy::RETRY_ON_RETRIABLE_STATUS_CODES;
@@ -168,6 +169,8 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryOn(absl::string_view config)
       ret |= RetryPolicy::RETRY_ON_GATEWAY_ERROR;
     } else if (retry_on == Http::Headers::get().EnvoyRetryOnValues.ConnectFailure) {
       ret |= RetryPolicy::RETRY_ON_CONNECT_FAILURE;
+    } else if (retry_on == Http::Headers::get().EnvoyRetryOnValues.EnvoyRatelimited) {
+      ret |= RetryPolicy::RETRY_ON_ENVOY_RATELIMITED;
     } else if (retry_on == Http::Headers::get().EnvoyRetryOnValues.Retriable4xx) {
       ret |= RetryPolicy::RETRY_ON_RETRIABLE_4XX;
     } else if (retry_on == Http::Headers::get().EnvoyRetryOnValues.RefusedStream) {
@@ -289,9 +292,9 @@ RetryStatus RetryStateImpl::shouldHedgeRetryPerTryTimeout(DoRetryCallback callba
 }
 
 bool RetryStateImpl::wouldRetryFromHeaders(const Http::ResponseHeaderMap& response_headers) {
-  // We never retry if the request is rate limited.
+  // We retry rate limited requests only when the ratelimited policy is in effect.
   if (response_headers.EnvoyRateLimited() != nullptr) {
-    return false;
+    return retry_on_ & RetryPolicy::RETRY_ON_ENVOY_RATELIMITED;
   }
 
   if (retry_on_ & RetryPolicy::RETRY_ON_5XX) {
