@@ -1037,7 +1037,7 @@ message RouteAction {
 }
 
 // HTTP retry :ref:`architecture overview <arch_overview_http_routing_retry>`.
-// [#next-free-field: 11]
+// [#next-free-field: 12]
 message RetryPolicy {
   option (udpa.annotations.versioning).previous_message_type = "envoy.config.route.v3.RetryPolicy";
 
@@ -1091,6 +1091,15 @@ message RetryPolicy {
     google.protobuf.Duration max_interval = 2 [(validate.rules).duration = {gt {}}];
   }
 
+  message RateLimitedRetryBackOff {
+    option (udpa.annotations.versioning).previous_message_type =
+        "envoy.config.route.v3.RetryPolicy.RateLimitedRetryBackOff";
+
+    repeated HeaderMatcher reset_headers = 1;
+
+    google.protobuf.Duration reset_max_interval = 2 [(validate.rules).duration = {gt {}}];
+  }
+
   // Specifies the conditions under which retry takes place. These are the same
   // conditions documented for :ref:`config_http_filters_router_x-envoy-retry-on` and
   // :ref:`config_http_filters_router_x-envoy-retry-grpc-on`.
@@ -1139,6 +1148,8 @@ message RetryPolicy {
   // the base interval. The documentation for :ref:`config_http_filters_router_x-envoy-max-retries`
   // describes Envoy's back-off algorithm.
   RetryBackOff retry_back_off = 8;
+
+  RateLimitedRetryBackOff rate_limited_retry_back_off = 11;
 
   // HTTP response headers that trigger a retry if present in the response. A retry will be
   // triggered if any of the header matches match the upstream response headers.

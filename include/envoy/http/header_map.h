@@ -17,6 +17,7 @@
 
 #include "absl/container/inlined_vector.h"
 #include "absl/strings/string_view.h"
+#include "absl/types/optional.h"
 
 namespace Envoy {
 namespace Http {
@@ -273,6 +274,8 @@ private:
   HEADER_FUNC(EnvoyInternalRequest)                                                                \
   HEADER_FUNC(EnvoyIpTags)                                                                         \
   HEADER_FUNC(EnvoyMaxRetries)                                                                     \
+  HEADER_FUNC(EnvoyRateLimitedResetHeaders)                                                        \
+  HEADER_FUNC(EnvoyRateLimitedResetMaxIntervalMs)                                                  \
   HEADER_FUNC(EnvoyRetryOn)                                                                        \
   HEADER_FUNC(EnvoyRetryGrpcOn)                                                                    \
   HEADER_FUNC(EnvoyRetriableStatusCodes)                                                           \
@@ -765,6 +768,15 @@ using HeaderVector = std::vector<std::pair<LowerCaseString, std::string>>;
 class HeaderMatcher {
 public:
   virtual ~HeaderMatcher() = default;
+
+  /**
+   * This getter exists so that once matchHeaders() has been called on a HeaderMap the concrete
+   * header in that map can be extracted by using this getter to discover its name. This is possible
+   * in all cases, except when invert_match_ is true, because in the latter case name_ would *not*
+   * reflect the matching header.
+   * @return the header name the matcher will match against.
+   */
+  virtual const LowerCaseString* name() const PURE;
 
   /**
    * Check whether header matcher matches any headers in a given HeaderMap.
