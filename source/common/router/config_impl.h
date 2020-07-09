@@ -294,6 +294,8 @@ private:
   std::vector<Http::HeaderMatcherSharedPtr> retriable_request_headers_;
   absl::optional<std::chrono::milliseconds> base_interval_;
   absl::optional<std::chrono::milliseconds> max_interval_;
+  absl::optional<std::string> reset_headers_;
+  absl::optional<std::chrono::milliseconds> reset_max_delay_;
   ProtobufMessage::ValidationVisitor* validation_visitor_{};
 };
 
