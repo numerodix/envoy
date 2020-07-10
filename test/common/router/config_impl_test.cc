@@ -3553,6 +3553,41 @@ virtual_hosts:
       "retry_policy.max_interval must greater than or equal to the base_interval");
 }
 
+TEST_F(RouteMatcherTest, RateLimitedRetryBackOff) {
+  const std::string yaml = R"EOF(
+virtual_hosts:
+- name: www
+  domains:
+  - www.lyft.com
+  routes:
+  - match:
+      prefix: "/foo"
+    route:
+      cluster: www
+      retry_policy:
+        rate_limited_retry_back_off:
+          reset_headers:
+          - name: Retry-After
+          - name: RateLimit-Reset
+          reset_max_interval: 0.050s
+  )EOF";
+
+  TestConfigImpl config(parseRouteConfigurationFromYaml(yaml), factory_context_, true);
+
+  Http::TestRequestHeaderMapImpl headers = genHeaders("www.lyft.com", "/foo", "GET");
+  const auto& retry_policy = config.route(headers, 0)->routeEntry()->retryPolicy();
+  ASSERT_EQ(2, retry_policy.ratelimitResetHeaders().size());
+
+  Http::TestResponseHeaderMapImpl expected_0{{"Retry-After", "not-used"}};
+  Http::TestResponseHeaderMapImpl expected_1{{"RateLimit-Reset", "not-used"}};
+
+  EXPECT_TRUE(retry_policy.ratelimitResetHeaders()[0]->matchesHeaders(expected_0));
+  EXPECT_TRUE(retry_policy.ratelimitResetHeaders()[1]->matchesHeaders(expected_1));
+
+  EXPECT_EQ(absl::optional<std::chrono::milliseconds>(50),
+            retry_policy.ratelimitResetMaxInterval());
+}
+
 TEST_F(RouteMatcherTest, HedgeRouteLevel) {
   const std::string yaml = R"EOF(
 virtual_hosts:

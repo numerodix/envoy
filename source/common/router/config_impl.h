@@ -272,6 +272,12 @@ public:
   }
   absl::optional<std::chrono::milliseconds> baseInterval() const override { return base_interval_; }
   absl::optional<std::chrono::milliseconds> maxInterval() const override { return max_interval_; }
+  const std::vector<Http::HeaderMatcherSharedPtr>& ratelimitResetHeaders() const override {
+    return ratelimit_reset_headers_;
+  }
+  absl::optional<std::chrono::milliseconds> ratelimitResetMaxInterval() const override {
+    return ratelimit_reset_max_interval_;
+  }
 
 private:
   std::chrono::milliseconds per_try_timeout_{0};
@@ -294,8 +300,8 @@ private:
   std::vector<Http::HeaderMatcherSharedPtr> retriable_request_headers_;
   absl::optional<std::chrono::milliseconds> base_interval_;
   absl::optional<std::chrono::milliseconds> max_interval_;
-  absl::optional<std::string> reset_headers_;
-  absl::optional<std::chrono::milliseconds> reset_max_delay_;
+  std::vector<Http::HeaderMatcherSharedPtr> ratelimit_reset_headers_{};
+  absl::optional<std::chrono::milliseconds> ratelimit_reset_max_interval_;
   ProtobufMessage::ValidationVisitor* validation_visitor_{};
 };
 

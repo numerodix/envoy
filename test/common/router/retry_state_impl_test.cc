@@ -219,7 +219,7 @@ TEST_F(RouterRetryStateImplTest, PolicyResourceExhaustedRemoteRateLimited) {
 }
 
 TEST_F(RouterRetryStateImplTest, PolicyEnvoyRateLimitedRemoteRateLimited) {
-  Http::TestRequestHeaderMapImpl request_headers{{"x-envoy-retry-on", "envoy-ratelimited"}};
+  Http::TestRequestHeaderMapImpl request_headers{{"x-envoy-retry-on", "envoy-rate-limited"}};
   setup(request_headers);
   EXPECT_TRUE(state_->enabled());
 
