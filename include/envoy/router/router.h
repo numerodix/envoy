@@ -169,7 +169,7 @@ public:
   static const uint32_t RETRY_ON_RETRIABLE_STATUS_CODES  = 0x400;
   static const uint32_t RETRY_ON_RESET                   = 0x800;
   static const uint32_t RETRY_ON_RETRIABLE_HEADERS       = 0x1000;
-  static const uint32_t RETRY_ON_ENVOY_RATELIMITED       = 0x2000;
+  static const uint32_t RETRY_ON_ENVOY_RATE_LIMITED      = 0x2000;
   // clang-format on
 
   virtual ~RetryPolicy() = default;
@@ -235,6 +235,17 @@ public:
    * @return absl::optional<std::chrono::milliseconds> maximum retry interval
    */
   virtual absl::optional<std::chrono::milliseconds> maxInterval() const PURE;
+
+  /**
+   * @return std::vector<Http::HeaderMatcherSharedPt>& list of response header
+   * matchers that will be attempted to extract a ratelimited maximum retry interval
+   */
+  virtual const std::vector<Http::HeaderMatcherSharedPtr>& ratelimitResetHeaders() const PURE;
+
+  /**
+   * @return absl::optional<std::chrono::milliseconds> ratelimited maximum retry interval
+   */
+  virtual absl::optional<std::chrono::milliseconds> ratelimitResetMaxInterval() const PURE;
 };
 
 /**
