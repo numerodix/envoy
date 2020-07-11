@@ -38,6 +38,27 @@ private:
 };
 
 /**
+ * Implementation of BackOffStrategy that returns random values in the range
+ * [min_interval, 1.5 * min_interval).
+ */
+class JitteredLowerBoundBackOffStrategy : public BackOffStrategy {
+public:
+  /**
+   * Constructs fully jittered backoff strategy.
+   * @param min_interval the lower bound on the next backoff value.
+   * @param random the random generator.
+   */
+  JitteredLowerBoundBackOffStrategy(uint64_t min_interval, Runtime::RandomGenerator& random);
+
+  uint64_t nextBackOffMs() override;
+  void reset() override {}
+
+private:
+  const uint64_t min_interval_;
+  Runtime::RandomGenerator& random_;
+};
+
+/**
  * Implementation of BackOffStrategy that uses a fixed backoff.
  */
 class FixedBackOffStrategy : public BackOffStrategy {
