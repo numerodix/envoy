@@ -24,6 +24,15 @@ uint64_t JitteredBackOffStrategy::nextBackOffMs() {
 
 void JitteredBackOffStrategy::reset() { next_interval_ = base_interval_; }
 
+JitteredLowerBoundBackOffStrategy::JitteredLowerBoundBackOffStrategy(
+    uint64_t min_interval, Runtime::RandomGenerator& random)
+    : min_interval_(min_interval), random_(random) {}
+
+uint64_t JitteredLowerBoundBackOffStrategy::nextBackOffMs() {
+  // random(min_interval_, 1.5 * min_interval_)
+  return (random_.random() % (min_interval_ >> 1)) + min_interval_;
+}
+
 FixedBackOffStrategy::FixedBackOffStrategy(uint64_t interval_ms) : interval_ms_(interval_ms) {
   ASSERT(interval_ms_ > 0);
 }

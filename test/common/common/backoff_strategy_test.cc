@@ -78,6 +78,22 @@ TEST(BackOffStrategyTest, JitteredBackOffWithMaxIntervalReset) {
   EXPECT_EQ(99, jittered_back_off.nextBackOffMs());
 }
 
+TEST(BackOffStrategyTest, JitteredLowerBoundBackOffWithLowRandomValue) {
+  NiceMock<Runtime::MockRandomGenerator> random;
+  ON_CALL(random, random()).WillByDefault(Return(22));
+
+  JitteredLowerBoundBackOffStrategy jittered_lower_bound_back_off(500, random);
+  EXPECT_EQ(522, jittered_lower_bound_back_off.nextBackOffMs());
+}
+
+TEST(BackOffStrategyTest, JitteredLowerBoundBackOffWithHighRandomValue) {
+  NiceMock<Runtime::MockRandomGenerator> random;
+  ON_CALL(random, random()).WillByDefault(Return(9999));
+
+  JitteredLowerBoundBackOffStrategy jittered_lower_bound_back_off(500, random);
+  EXPECT_EQ(749, jittered_lower_bound_back_off.nextBackOffMs());
+}
+
 TEST(BackOffStrategyTest, FixedBackOffBasicReset) {
   FixedBackOffStrategy fixed_back_off(30);
   EXPECT_EQ(30, fixed_back_off.nextBackOffMs());
