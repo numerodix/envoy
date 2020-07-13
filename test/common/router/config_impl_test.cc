@@ -3572,6 +3572,16 @@ virtual_hosts:
       prefix: "/foo"
     route:
       cluster: www
+  - match:
+      prefix: "/bar"
+    route:
+      cluster: www
+      retry_policy:
+        rate_limited_retry_back_off: {}
+  - match:
+      prefix: "/baz"
+    route:
+      cluster: www
       retry_policy:
         rate_limited_retry_back_off:
           reset_headers:
@@ -3582,9 +3592,34 @@ virtual_hosts:
 
   TestConfigImpl config(parseRouteConfigurationFromYaml(yaml), factory_context_, true);
 
-  Http::TestRequestHeaderMapImpl headers = genHeaders("www.lyft.com", "/foo", "GET");
+  // foo has no ratelimit retry back off
+  EXPECT_EQ(std::chrono::milliseconds(60000),
+            config.route(genHeaders("www.lyft.com", "/foo", "GET"), 0)
+                ->routeEntry()
+                ->retryPolicy()
+                .ratelimitResetMaxInterval());
+  EXPECT_EQ(0, config.route(genHeaders("www.lyft.com", "/foo", "GET"), 0)
+                   ->routeEntry()
+                   ->retryPolicy()
+                   .ratelimitResetHeaders()
+                   .size());
+
+  // bar has empty ratelimit retry back off
+  EXPECT_EQ(std::chrono::milliseconds(60000),
+            config.route(genHeaders("www.lyft.com", "/bar", "GET"), 0)
+                ->routeEntry()
+                ->retryPolicy()
+                .ratelimitResetMaxInterval());
+  EXPECT_EQ(0, config.route(genHeaders("www.lyft.com", "/bar", "GET"), 0)
+                   ->routeEntry()
+                   ->retryPolicy()
+                   .ratelimitResetHeaders()
+                   .size());
+
+  // baz does have a ratelimit retry back off
+  Http::TestRequestHeaderMapImpl headers = genHeaders("www.lyft.com", "/baz", "GET");
   const auto& retry_policy = config.route(headers, 0)->routeEntry()->retryPolicy();
-  ASSERT_EQ(2, retry_policy.ratelimitResetHeaders().size());
+  EXPECT_EQ(2, retry_policy.ratelimitResetHeaders().size());
 
   Http::TestResponseHeaderMapImpl expected_0{{"Retry-After", "not-used"}};
   Http::TestResponseHeaderMapImpl expected_1{{"RateLimit-Reset", "not-used"}};
@@ -3592,8 +3627,7 @@ virtual_hosts:
   EXPECT_TRUE(retry_policy.ratelimitResetHeaders()[0]->matchesHeaders(expected_0));
   EXPECT_TRUE(retry_policy.ratelimitResetHeaders()[1]->matchesHeaders(expected_1));
 
-  EXPECT_EQ(absl::optional<std::chrono::milliseconds>(50),
-            retry_policy.ratelimitResetMaxInterval());
+  EXPECT_EQ(std::chrono::milliseconds(50), retry_policy.ratelimitResetMaxInterval());
 }
 
 TEST_F(RouteMatcherTest, HedgeRouteLevel) {
@@ -6955,7 +6989,7 @@ virtual_hosts:
 
 TEST_F(RouteConfigurationV2, UpgradeConfigs) {
   const std::string UpgradeYaml = R"EOF(
-name: RetriableStatusCodes
+name: UpgradeConfigs
 virtual_hosts:
   - name: regex
     domains: [idle.lyft.com]
@@ -6983,7 +7017,7 @@ virtual_hosts:
 
 TEST_F(RouteConfigurationV2, DuplicateUpgradeConfigs) {
   const std::string yaml = R"EOF(
-name: RetriableStatusCodes
+name: DuplicateUpgradeConfigs
 virtual_hosts:
   - name: regex
     domains: [idle.lyft.com]
@@ -7007,7 +7041,7 @@ virtual_hosts:
 
 TEST_F(RouteConfigurationV2, BadConnectConfig) {
   const std::string yaml = R"EOF(
-name: RetriableStatusCodes
+name: BadConnectConfig
 virtual_hosts:
   - name: regex
     domains: [idle.lyft.com]
@@ -7033,7 +7067,7 @@ virtual_hosts:
 // returning the same one.
 TEST_F(RouteConfigurationV2, RetryPluginsAreNotReused) {
   const std::string ExplicitIdleTimeout = R"EOF(
-name: RetriableStatusCodes
+name: ExplicitIdleTimeout
 virtual_hosts:
   - name: regex
     domains: [idle.lyft.com]
@@ -7072,7 +7106,7 @@ virtual_hosts:
   EXPECT_NE(predicates1, predicates2);
 }
 
-TEST_F(RouteConfigurationV2, InternalRedirctIsDisabledWhenNotSpecifiedInRouteAction) {
+TEST_F(RouteConfigurationV2, InternalRedirectIsDisabledWhenNotSpecifiedInRouteAction) {
   const std::string InternalRedirectEnabled = R"EOF(
 name: InternalRedirectEnabled
 virtual_hosts:
@@ -7096,7 +7130,7 @@ virtual_hosts:
   EXPECT_FALSE(internal_redirect_policy.enabled());
 }
 
-TEST_F(RouteConfigurationV2, DefaultInternalRedirctPolicyIsSensible) {
+TEST_F(RouteConfigurationV2, DefaultInternalRedirectPolicyIsSensible) {
   const std::string InternalRedirectEnabled = R"EOF(
 name: InternalRedirectEnabled
 virtual_hosts:
@@ -7127,7 +7161,7 @@ virtual_hosts:
   EXPECT_FALSE(internal_redirect_policy.isCrossSchemeRedirectAllowed());
 }
 
-TEST_F(RouteConfigurationV2, InternalRedirctPolicyDropsInvalidRedirectCode) {
+TEST_F(RouteConfigurationV2, InternalRedirectPolicyDropsInvalidRedirectCode) {
   const std::string InternalRedirectEnabled = R"EOF(
 name: InternalRedirectEnabled
 virtual_hosts:
@@ -7164,7 +7198,7 @@ virtual_hosts:
       internal_redirect_policy.shouldRedirectForResponseCode(static_cast<Http::Code>(307)));
 }
 
-TEST_F(RouteConfigurationV2, InternalRedirctPolicyDropsInvalidRedirectCodeCauseEmptySet) {
+TEST_F(RouteConfigurationV2, InternalRedirectPolicyDropsInvalidRedirectCodeCauseEmptySet) {
   const std::string InternalRedirectEnabled = R"EOF(
 name: InternalRedirectEnabled
 virtual_hosts:

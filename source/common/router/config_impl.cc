@@ -125,11 +125,14 @@ RetryPolicyImpl::RetryPolicyImpl(const envoy::config::route::v3::RetryPolicy& re
     ratelimit_reset_headers_ = Http::HeaderUtility::buildHeaderMatcherVector(
         retry_policy.rate_limited_retry_back_off().reset_headers());
 
-    ratelimit_reset_max_interval_ = std::chrono::milliseconds(
-        PROTOBUF_GET_MS_REQUIRED(retry_policy.rate_limited_retry_back_off(), reset_max_interval));
-    if ((*ratelimit_reset_max_interval_).count() < 1) {
-      ratelimit_reset_max_interval_ = std::chrono::milliseconds(60000);
-    }
+    auto ratelimit_reset_max_interval = std::chrono::milliseconds(PROTOBUF_GET_MS_OR_DEFAULT(
+        retry_policy.rate_limited_retry_back_off(), reset_max_interval, 60000));
+    // TODO: case: it's sub-ms
+    // TODO: case: it's zero
+    // if (ratelimit_reset_max_interval.count() < 1) {
+    //   ratelimit_reset_max_interval = std::chrono::milliseconds(1);
+    // }
+    ratelimit_reset_max_interval_ = ratelimit_reset_max_interval;
   }
 }
 
