@@ -73,7 +73,9 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
       retry_host_predicates_(route_policy.retryHostPredicates()),
       retry_priority_(route_policy.retryPriority()),
       retriable_status_codes_(route_policy.retriableStatusCodes()),
-      retriable_headers_(route_policy.retriableHeaders()) {
+      retriable_headers_(route_policy.retriableHeaders()),
+      ratelimit_reset_headers_(route_policy.ratelimitResetHeaders()),
+      ratelimit_reset_max_interval_(route_policy.ratelimitResetMaxInterval()) {
 
   std::chrono::milliseconds base_interval(
       runtime_.snapshot().getInteger("upstream.base_retry_backoff_ms", 25));
@@ -147,6 +149,8 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
           std::make_shared<Http::HeaderUtility::HeaderData>(header_matcher));
     }
   }
+
+  /// TODO: do equivalent of retriable-header names ^ for rate limit reset headers
 }
 
 RetryStateImpl::~RetryStateImpl() { resetRetry(); }
@@ -156,8 +160,14 @@ void RetryStateImpl::enableBackoffTimer() {
     retry_timer_ = dispatcher_.createTimer([this]() -> void { callback_(); });
   }
 
-  // We use a fully jittered exponential backoff algorithm.
-  retry_timer_->enableTimer(std::chrono::milliseconds(backoff_strategy_->nextBackOffMs()));
+  if (ratelimit_backoff_strategy_ != nullptr) {
+    // We use a fully jittered backoff strategy based on the ratelimit feedback.
+    retry_timer_->enableTimer(
+        std::chrono::milliseconds(ratelimit_backoff_strategy_->nextBackOffMs()));
+  } else {
+    // We use a fully jittered exponential backoff algorithm.
+    retry_timer_->enableTimer(std::chrono::milliseconds(backoff_strategy_->nextBackOffMs()));
+  }
 }
 
 std::pair<uint32_t, bool> RetryStateImpl::parseRetryOn(absl::string_view config) {
@@ -273,7 +283,14 @@ RetryStatus RetryStateImpl::shouldRetry(bool would_retry, DoRetryCallback callba
 
 RetryStatus RetryStateImpl::shouldRetryHeaders(const Http::ResponseHeaderMap& response_headers,
                                                DoRetryCallback callback) {
-  return shouldRetry(wouldRetryFromHeaders(response_headers), callback);
+  const RetryStatus retry_status = shouldRetry(wouldRetryFromHeaders(response_headers), callback);
+
+  // Yes, we will retry - try to parse a ratelimit reset interval from the response
+  if (retry_status == RetryStatus::Yes) {
+    parseRateLimitResetInterval(response_headers);
+  }
+
+  return retry_status;
 }
 
 RetryStatus RetryStateImpl::shouldRetryReset(Http::StreamResetReason reset_reason,
@@ -355,6 +372,22 @@ bool RetryStateImpl::wouldRetryFromHeaders(const Http::ResponseHeaderMap& respon
   }
 
   return false;
+}
+
+void RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) {
+  // always remove previous strategy
+  ratelimit_backoff_strategy_.reset();
+
+  for (const auto& reset_header : ratelimit_reset_headers_) {
+    if (reset_header->matchesHeaders(response_headers)) {
+      // TODO: actual parsing logic goes here
+
+      // parse succeeded -> construct strategy
+      ratelimit_backoff_strategy_ =
+          std::make_unique<JitteredLowerBoundBackOffStrategy>(500UL, random_);
+      break;
+    }
+  }
 }
 
 bool RetryStateImpl::wouldRetryFromReset(const Http::StreamResetReason reset_reason) {

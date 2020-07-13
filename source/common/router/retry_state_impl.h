@@ -57,6 +57,7 @@ public:
   // Returns true if the retry policy would retry the passed headers. Does not
   // take into account circuit breaking or remaining tries.
   bool wouldRetryFromHeaders(const Http::ResponseHeaderMap& response_headers) override;
+  void parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers);
   RetryStatus shouldRetryReset(const Http::StreamResetReason reset_reason,
                                DoRetryCallback callback) override;
   RetryStatus shouldHedgeRetryPerTryTimeout(DoRetryCallback callback) override;
@@ -110,11 +111,14 @@ private:
   Event::TimerPtr retry_timer_;
   Upstream::ResourcePriority priority_;
   BackOffStrategyPtr backoff_strategy_;
+  BackOffStrategyPtr ratelimit_backoff_strategy_{};
   std::vector<Upstream::RetryHostPredicateSharedPtr> retry_host_predicates_;
   Upstream::RetryPrioritySharedPtr retry_priority_;
   uint32_t host_selection_max_attempts_;
   std::vector<uint32_t> retriable_status_codes_;
   std::vector<Http::HeaderMatcherSharedPtr> retriable_headers_;
+  std::vector<Http::HeaderMatcherSharedPtr> ratelimit_reset_headers_{};
+  std::chrono::milliseconds ratelimit_reset_max_interval_;
 };
 
 } // namespace Router

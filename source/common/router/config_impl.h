@@ -301,7 +301,7 @@ private:
   absl::optional<std::chrono::milliseconds> base_interval_;
   absl::optional<std::chrono::milliseconds> max_interval_;
   std::vector<Http::HeaderMatcherSharedPtr> ratelimit_reset_headers_{};
-  absl::optional<std::chrono::milliseconds> ratelimit_reset_max_interval_;
+  std::chrono::milliseconds ratelimit_reset_max_interval_{60000};
   ProtobufMessage::ValidationVisitor* validation_visitor_{};
 };
 
