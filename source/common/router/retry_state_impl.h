@@ -89,6 +89,9 @@ public:
 
   uint32_t hostSelectionMaxAttempts() const override { return host_selection_max_attempts_; }
 
+  const std::vector<Http::HeaderMatcherSharedPtr>& ratelimitResetHeaders() const override {
+    return ratelimit_reset_headers_;
+  }
   std::chrono::milliseconds ratelimitResetMaxInterval() const override {
     return ratelimit_reset_max_interval_;
   }
