@@ -183,6 +183,10 @@ void RetryStateImpl::enableBackoffTimer() {
     // We use a fully jittered backoff strategy based on the ratelimit feedback.
     retry_timer_->enableTimer(
         std::chrono::milliseconds(ratelimit_backoff_strategy_->nextBackOffMs()));
+
+    // A ratelimit backoff strategy is only valid for the response that sent the ratelimit reset
+    // header, so make sure we always destruct it after setting the timer.
+    ratelimit_backoff_strategy_.reset();
   } else {
     printf("Using exponential backoff\n");
     // We use a fully jittered exponential backoff algorithm.
@@ -242,6 +246,28 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
   return {ret, all_fields_valid};
 }
 
+absl::optional<std::chrono::milliseconds>
+RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) {
+  for (const auto& reset_header : ratelimit_reset_headers_) {
+    if (reset_header->matchesHeaders(response_headers)) {
+      const Http::LowerCaseString& header_name = reset_header->name();
+      const Http::HeaderEntry* entry = response_headers.get(header_name);
+      if (entry != nullptr) {
+        const auto& value = entry->value().getStringView();
+        unsigned long out;
+        if (absl::SimpleAtoi(value, &out)) {
+          printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), out);
+          const auto interval = std::chrono::milliseconds(out);
+          if (interval <= ratelimit_reset_max_interval_) {
+            return absl::optional<std::chrono::milliseconds>(interval);
+          }
+        }
+      }
+    }
+  }
+  return absl::nullopt;
+}
+
 void RetryStateImpl::resetRetry() {
   if (callback_) {
     cluster_.resourceManager(priority_).retries().dec();
@@ -297,13 +323,7 @@ RetryStatus RetryStateImpl::shouldRetry(bool would_retry, DoRetryCallback callba
   if (vcluster_) {
     vcluster_->stats().upstream_rq_retry_.inc();
   }
-
   enableBackoffTimer();
-
-  // A ratelimit backoff strategy is only valid for the response that sent the ratelimit reset
-  // header, so make sure we always destruct it after setting the timer.
-  ratelimit_backoff_strategy_.reset();
-
   return RetryStatus::Yes;
 }
 
@@ -314,7 +334,11 @@ RetryStatus RetryStateImpl::shouldRetryHeaders(const Http::ResponseHeaderMap& re
   // Yes, we will retry based on the headers - try to parse a ratelimit reset interval from the
   // response
   if (would_retry) {
-    parseRateLimitResetInterval(response_headers);
+    const auto backoff_interval = parseRateLimitResetInterval(response_headers);
+    if (backoff_interval.has_value()) {
+      ratelimit_backoff_strategy_ = std::make_unique<JitteredLowerBoundBackOffStrategy>(
+          backoff_interval.value().count(), random_);
+    }
   }
 
   return shouldRetry(would_retry, callback);
@@ -399,28 +423,6 @@ bool RetryStateImpl::wouldRetryFromHeaders(const Http::ResponseHeaderMap& respon
   }
 
   return false;
-}
-
-void RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) {
-  for (const auto& reset_header : ratelimit_reset_headers_) {
-    if (reset_header->matchesHeaders(response_headers)) {
-      const Http::LowerCaseString& header_name = reset_header->name();
-      const Http::HeaderEntry* entry = response_headers.get(header_name);
-      if (entry != nullptr) {
-        const auto& value = entry->value().getStringView();
-        unsigned long out;
-        if (absl::SimpleAtoi(value, &out)) {
-          printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), out);
-          const auto interval = std::chrono::milliseconds(out);
-          if (interval <= ratelimit_reset_max_interval_) {
-            ratelimit_backoff_strategy_ =
-                std::make_unique<JitteredLowerBoundBackOffStrategy>(interval.count(), random_);
-            break;
-          }
-        }
-      }
-    }
-  }
 }
 
 bool RetryStateImpl::wouldRetryFromReset(const Http::StreamResetReason reset_reason) {
