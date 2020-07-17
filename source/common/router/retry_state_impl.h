@@ -88,6 +88,10 @@ public:
 
   uint32_t hostSelectionMaxAttempts() const override { return host_selection_max_attempts_; }
 
+  std::chrono::milliseconds ratelimitResetMaxInterval() const override {
+    return ratelimit_reset_max_interval_;
+  }
+
 private:
   RetryStateImpl(const RetryPolicy& route_policy, Http::RequestHeaderMap& request_headers,
                  const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
@@ -117,7 +121,7 @@ private:
   std::vector<uint32_t> retriable_status_codes_;
   std::vector<Http::HeaderMatcherSharedPtr> retriable_headers_;
   std::vector<Http::HeaderMatcherSharedPtr> ratelimit_reset_headers_{};
-  // std::chrono::milliseconds ratelimit_reset_max_interval_;
+  std::chrono::milliseconds ratelimit_reset_max_interval_{300000};
 };
 
 } // namespace Router

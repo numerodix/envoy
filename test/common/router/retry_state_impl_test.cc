@@ -1236,6 +1236,40 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
   }
 }
 
+TEST_F(RouterRetryStateImplTest, ParseRateLimitMaxInterval) {
+  // Value set in headers takes precedence over config
+  {
+    Http::TestRequestHeaderMapImpl request_headers{
+        {"x-envoy-retry-on", "5xx"}, {"x-envoy-rate-limited-reset-max-interval-ms", "1000"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    policy_.ratelimit_reset_max_interval_ = absl::optional<std::chrono::milliseconds>(3000);
+
+    EXPECT_EQ(std::chrono::milliseconds(1000), state_->ratelimitResetMaxInterval());
+  }
+
+  // Value set in config is used as fallback
+  {
+    Http::TestRequestHeaderMapImpl request_headers{{"x-envoy-retry-on", "5xx"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    policy_.ratelimit_reset_max_interval_ = absl::optional<std::chrono::milliseconds>(3000);
+
+    EXPECT_EQ(std::chrono::milliseconds(3000), state_->ratelimitResetMaxInterval());
+  }
+
+  // No value set in via config nor headers so we get the default value
+  {
+    Http::TestRequestHeaderMapImpl request_headers{{"x-envoy-retry-on", "5xx"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    EXPECT_EQ(std::chrono::milliseconds(300000), state_->ratelimitResetMaxInterval());
+  }
+}
+
 } // namespace
 } // namespace Router
 } // namespace Envoy
