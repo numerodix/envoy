@@ -381,6 +381,7 @@ public:
       const Upstream::HealthyAndDegradedLoad& original_priority_load,
       const Upstream::RetryPriority::PriorityMappingFunc& priority_mapping_func) PURE;
 
+  virtual const std::vector<Http::HeaderMatcherSharedPtr>& ratelimitResetHeaders() const PURE;
   virtual std::chrono::milliseconds ratelimitResetMaxInterval() const PURE;
 
   /**

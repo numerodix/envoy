@@ -159,7 +159,16 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
     ratelimit_reset_max_interval_ = route_policy.ratelimitResetMaxInterval().value();
   }
 
-  /// TODO: do equivalent of retriable-header names ^ for rate limit reset headers
+  // Do equivalent of retriable-header names ^ for rate limit reset headers
+  if (request_headers.EnvoyRateLimitedResetHeaders()) {
+    for (const auto header_name : StringUtil::splitToken(
+             request_headers.EnvoyRateLimitedResetHeaders()->value().getStringView(), ",")) {
+      envoy::config::route::v3::HeaderMatcher header_matcher;
+      header_matcher.set_name(std::string(absl::StripAsciiWhitespace(header_name)));
+      ratelimit_reset_headers_.emplace_back(
+          std::make_shared<Http::HeaderUtility::HeaderData>(header_matcher));
+    }
+  }
 }
 
 RetryStateImpl::~RetryStateImpl() { resetRetry(); }
