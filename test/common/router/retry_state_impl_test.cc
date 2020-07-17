@@ -1315,6 +1315,17 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitResetInterval) {
     EXPECT_EQ(absl::nullopt, state_->parseRateLimitResetInterval(response_headers));
   }
 
+  // The reset header value is out of range
+  {
+    Http::TestRequestHeaderMapImpl request_headers{
+        {"x-envoy-retry-on", "5xx"}, {"x-envoy-rate-limited-reset-headers", "Retry-After"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    Http::TestResponseHeaderMapImpl response_headers{{":status", "429"}, {"Retry-After", "301"}};
+    EXPECT_EQ(absl::nullopt, state_->parseRateLimitResetInterval(response_headers));
+  }
+
   // The only reset header matches
   {
     Http::TestRequestHeaderMapImpl request_headers{

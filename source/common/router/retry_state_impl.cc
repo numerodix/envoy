@@ -257,7 +257,9 @@ RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& respo
         unsigned long out;
         if (absl::SimpleAtoi(header_value, &out)) {
           printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), out);
+
           const auto interval = std::chrono::milliseconds(out * 1000UL);
+
           if (interval <= ratelimit_reset_max_interval_) {
             return absl::optional<std::chrono::milliseconds>(interval);
           }
