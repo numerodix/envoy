@@ -47,6 +47,13 @@ public:
     const bool invert_match_;
 
     // HeaderMatcher
+    const LowerCaseString& name() const override {
+      /// TODO: this is not safe because name_ may not be set - this is a variant type!
+      ASSERT(name_.get().size() > 0);
+
+      return name_;
+    }
+
     bool matchesHeaders(const HeaderMap& headers) const override {
       return HeaderUtility::matchHeaders(headers, *this);
     };
