@@ -48,9 +48,10 @@ public:
 
     // HeaderMatcher
     const LowerCaseString& name() const override {
-      /// TODO: this is not safe because name_ may not be set - this is a variant type!
-      ASSERT(name_.get().size() > 0);
-
+      // This getter is not really supposed to exist because HeaderMatcher is a variant like type.
+      // In practice this *should* be safe because in the ctor for HeaderData name_ is always
+      // populated from the protobuf message, and at worst it's the empty string which won't match
+      // any headers anyway.
       return name_;
     }
 
