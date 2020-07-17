@@ -149,6 +149,17 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
     }
   }
 
+  if (request_headers.EnvoyRateLimitedResetMaxIntervalMs()) {
+    const auto max_interval =
+        request_headers.EnvoyRateLimitedResetMaxIntervalMs()->value().getStringView();
+    unsigned long out;
+    if (absl::SimpleAtoi(max_interval, &out)) {
+      ratelimit_reset_max_interval_ = std::chrono::milliseconds(out);
+    }
+  } else if (route_policy.ratelimitResetMaxInterval().has_value()) {
+    ratelimit_reset_max_interval_ = route_policy.ratelimitResetMaxInterval().value();
+  }
+
   /// TODO: do equivalent of retriable-header names ^ for rate limit reset headers
 }
 
