@@ -771,6 +771,8 @@ class HeaderMatcher {
 public:
   virtual ~HeaderMatcher() = default;
 
+  virtual const LowerCaseString& name() const PURE;
+
   /**
    * Check whether header matcher matches any headers in a given HeaderMap.
    */
