@@ -50,6 +50,9 @@ public:
    */
   static std::pair<uint32_t, bool> parseRetryGrpcOn(absl::string_view retry_grpc_on_header);
 
+  absl::optional<std::chrono::milliseconds>
+  parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers);
+
   // Router::RetryState
   bool enabled() override { return retry_on_ != 0; }
   RetryStatus shouldRetryHeaders(const Http::ResponseHeaderMap& response_headers,
@@ -57,7 +60,6 @@ public:
   // Returns true if the retry policy would retry the passed headers. Does not
   // take into account circuit breaking or remaining tries.
   bool wouldRetryFromHeaders(const Http::ResponseHeaderMap& response_headers) override;
-  void parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers);
   RetryStatus shouldRetryReset(const Http::StreamResetReason reset_reason,
                                DoRetryCallback callback) override;
   RetryStatus shouldHedgeRetryPerTryTimeout(DoRetryCallback callback) override;
