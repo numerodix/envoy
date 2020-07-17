@@ -305,6 +305,9 @@ public:
    */
   virtual bool enabled() PURE;
 
+  virtual absl::optional<std::chrono::milliseconds>
+  parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const PURE;
+
   /**
    * Determine whether a request should be retried based on the response headers.
    * @param response_headers supplies the response headers.
