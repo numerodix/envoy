@@ -1236,28 +1236,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
   }
 }
 
-TEST_F(RouterRetryStateImplTest, ParseRateLimitResetHeaders) {
-  Protobuf::RepeatedPtrField<envoy::config::route::v3::HeaderMatcher> matchers;
-  auto* matcher = matchers.Add();
-  matcher->set_name("Retry-After");
-
-  policy_.ratelimit_reset_headers_ = Http::HeaderUtility::buildHeaderMatcherVector(matchers);
-
-  Http::TestRequestHeaderMapImpl request_headers{
-      {"x-envoy-retry-on", "5xx"},
-      {"x-envoy-rate-limited-reset-headers", "RateLimit-Reset, X-RateLimit-Reset"}};
-  setup(request_headers);
-  EXPECT_TRUE(state_->enabled());
-
-  Http::TestResponseHeaderMapImpl expected_0{{"Retry-After", "not-used"}};
-  Http::TestResponseHeaderMapImpl expected_1{{"RateLimit-Reset", "not-used"}};
-  Http::TestResponseHeaderMapImpl expected_2{{"X-RateLimit-Reset", "not-used"}};
-
-  EXPECT_TRUE(state_->ratelimitResetHeaders()[0]->matchesHeaders(expected_0));
-  EXPECT_TRUE(state_->ratelimitResetHeaders()[1]->matchesHeaders(expected_1));
-  EXPECT_TRUE(state_->ratelimitResetHeaders()[2]->matchesHeaders(expected_2));
-}
-
 TEST_F(RouterRetryStateImplTest, ParseRateLimitResetMaxInterval) {
   // No value set in via config nor headers so we get the default value
   {
@@ -1288,6 +1266,79 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitResetMaxInterval) {
     EXPECT_TRUE(state_->enabled());
 
     EXPECT_EQ(std::chrono::milliseconds(1000), state_->ratelimitResetMaxInterval());
+  }
+}
+
+TEST_F(RouterRetryStateImplTest, ParseRateLimitResetHeaders) {
+  Protobuf::RepeatedPtrField<envoy::config::route::v3::HeaderMatcher> matchers;
+  auto* matcher = matchers.Add();
+  matcher->set_name("Retry-After");
+
+  policy_.ratelimit_reset_headers_ = Http::HeaderUtility::buildHeaderMatcherVector(matchers);
+
+  Http::TestRequestHeaderMapImpl request_headers{
+      {"x-envoy-retry-on", "5xx"},
+      {"x-envoy-rate-limited-reset-headers", "RateLimit-Reset, X-RateLimit-Reset"}};
+  setup(request_headers);
+  EXPECT_TRUE(state_->enabled());
+
+  Http::TestResponseHeaderMapImpl expected_0{{"Retry-After", "not-used"}};
+  Http::TestResponseHeaderMapImpl expected_1{{"RateLimit-Reset", "not-used"}};
+  Http::TestResponseHeaderMapImpl expected_2{{"X-RateLimit-Reset", "not-used"}};
+
+  EXPECT_TRUE(state_->ratelimitResetHeaders()[0]->matchesHeaders(expected_0));
+  EXPECT_TRUE(state_->ratelimitResetHeaders()[1]->matchesHeaders(expected_1));
+  EXPECT_TRUE(state_->ratelimitResetHeaders()[2]->matchesHeaders(expected_2));
+}
+
+TEST_F(RouterRetryStateImplTest, ParseRateLimitResetInterval) {
+  // The reset header name doesn't match
+  {
+    Http::TestRequestHeaderMapImpl request_headers{
+        {"x-envoy-retry-on", "5xx"}, {"x-envoy-rate-limited-reset-headers", "RateLimit-Reset"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    Http::TestResponseHeaderMapImpl response_headers{{":status", "429"}, {"Retry-After", "2"}};
+    EXPECT_EQ(absl::nullopt, state_->parseRateLimitResetInterval(response_headers));
+  }
+
+  // The reset header value is not a valid interval
+  {
+    Http::TestRequestHeaderMapImpl request_headers{
+        {"x-envoy-retry-on", "5xx"}, {"x-envoy-rate-limited-reset-headers", "Retry-After"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    Http::TestResponseHeaderMapImpl response_headers{
+        {":status", "429"}, {"Retry-After", "Fri, 17 Jul 2020 11:59:51 GMT"}};
+    EXPECT_EQ(absl::nullopt, state_->parseRateLimitResetInterval(response_headers));
+  }
+
+  // The only reset header matches
+  {
+    Http::TestRequestHeaderMapImpl request_headers{
+        {"x-envoy-retry-on", "5xx"}, {"x-envoy-rate-limited-reset-headers", "Retry-After"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    Http::TestResponseHeaderMapImpl response_headers{{":status", "429"}, {"Retry-After", "2"}};
+    EXPECT_EQ(absl::optional<std::chrono::milliseconds>(2000),
+              state_->parseRateLimitResetInterval(response_headers));
+  }
+
+  // The second reset header matches
+  {
+    Http::TestRequestHeaderMapImpl request_headers{
+        {"x-envoy-retry-on", "5xx"},
+        {"x-envoy-rate-limited-reset-headers", "Retry-After, X-RateLimit-Reset"}};
+    setup(request_headers);
+    EXPECT_TRUE(state_->enabled());
+
+    Http::TestResponseHeaderMapImpl response_headers{{":status", "429"},
+                                                     {"x-ratelimit-reset", "2"}};
+    EXPECT_EQ(absl::optional<std::chrono::milliseconds>(2000),
+              state_->parseRateLimitResetInterval(response_headers));
   }
 }
 

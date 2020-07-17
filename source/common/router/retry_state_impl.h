@@ -50,7 +50,7 @@ public:
   static std::pair<uint32_t, bool> parseRetryGrpcOn(absl::string_view retry_grpc_on_header);
 
   absl::optional<std::chrono::milliseconds>
-  parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers);
+  parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const override;
 
   // Router::RetryState
   bool enabled() override { return retry_on_ != 0; }

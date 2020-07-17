@@ -247,17 +247,17 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
 }
 
 absl::optional<std::chrono::milliseconds>
-RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) {
+RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const {
   for (const auto& reset_header : ratelimit_reset_headers_) {
     if (reset_header->matchesHeaders(response_headers)) {
       const Http::LowerCaseString& header_name = reset_header->name();
       const Http::HeaderEntry* entry = response_headers.get(header_name);
       if (entry != nullptr) {
-        const auto& value = entry->value().getStringView();
+        const auto& header_value = entry->value().getStringView();
         unsigned long out;
-        if (absl::SimpleAtoi(value, &out)) {
+        if (absl::SimpleAtoi(header_value, &out)) {
           printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), out);
-          const auto interval = std::chrono::milliseconds(out);
+          const auto interval = std::chrono::milliseconds(out * 1000UL);
           if (interval <= ratelimit_reset_max_interval_) {
             return absl::optional<std::chrono::milliseconds>(interval);
           }
