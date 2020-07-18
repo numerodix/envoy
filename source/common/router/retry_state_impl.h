@@ -28,8 +28,9 @@ public:
   static RetryStatePtr create(const RetryPolicy& route_policy,
                               Http::RequestHeaderMap& request_headers,
                               const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
-                              Runtime::Loader& runtime, Random::RandomGenerator& random,
-                              Event::Dispatcher& dispatcher, Upstream::ResourcePriority priority);
+                              Runtime::Loader& runtime, Runtime::RandomGenerator& random,
+                              Event::Dispatcher& dispatcher, TimeSource& time_source,
+                              Upstream::ResourcePriority priority);
   ~RetryStateImpl() override;
 
   /**
@@ -101,8 +102,9 @@ public:
 private:
   RetryStateImpl(const RetryPolicy& route_policy, Http::RequestHeaderMap& request_headers,
                  const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
-                 Runtime::Loader& runtime, Random::RandomGenerator& random,
-                 Event::Dispatcher& dispatcher, Upstream::ResourcePriority priority);
+                 Runtime::Loader& runtime, Runtime::RandomGenerator& random,
+                 Event::Dispatcher& dispatcher, TimeSource& time_source,
+                 Upstream::ResourcePriority priority);
 
   void enableBackoffTimer();
   void resetRetry();
@@ -114,6 +116,7 @@ private:
   Runtime::Loader& runtime_;
   Random::RandomGenerator& random_;
   Event::Dispatcher& dispatcher_;
+  TimeSource& time_source_;
   uint32_t retry_on_{};
   uint32_t retries_remaining_{};
   DoRetryCallback callback_;

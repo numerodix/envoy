@@ -42,7 +42,8 @@ public:
 
   void setup(Http::RequestHeaderMap& request_headers) {
     state_ = RetryStateImpl::create(policy_, request_headers, cluster_, &virtual_cluster_, runtime_,
-                                    random_, dispatcher_, Upstream::ResourcePriority::Default);
+                                    random_, dispatcher_, test_time_.timeSystem(),
+                                    Upstream::ResourcePriority::Default);
   }
 
   void expectTimerCreateAndEnable() {
@@ -123,6 +124,7 @@ public:
 
   void TearDown() override { cleanupOutstandingResources(); }
 
+  Event::SimulatedTimeSystem test_time_;
   NiceMock<TestRetryPolicy> policy_;
   NiceMock<Upstream::MockClusterInfo> cluster_;
   TestVirtualCluster virtual_cluster_;
