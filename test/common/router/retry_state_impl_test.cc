@@ -1396,6 +1396,43 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitResetInterval) {
   }
 }
 
+TEST_F(RouterRetryStateImplTest, RateLimitRetryBackoffStrategy) {
+  policy_.num_retries_ = 3;
+
+  Http::TestRequestHeaderMapImpl request_headers{
+      {"x-envoy-retry-on", "5xx"}, {"x-envoy-rate-limited-reset-headers", "Retry-After"}};
+  setup(request_headers);
+  EXPECT_TRUE(state_->enabled());
+
+  retry_timer_ = new Event::MockTimer(&dispatcher_);
+  Http::TestResponseHeaderMapImpl response_headers_reset{{":status", "500"}, {"retry-after", "2"}};
+  Http::TestResponseHeaderMapImpl response_headers_plain{{":status", "500"}};
+
+  // reset header present -> ratelimit backoff used
+  EXPECT_CALL(random_, random()).WillOnce(Return(190));
+  EXPECT_CALL(*retry_timer_, enableTimer(std::chrono::milliseconds(2190), _));
+  EXPECT_EQ(RetryStatus::Yes, state_->shouldRetryHeaders(response_headers_reset, callback_));
+  EXPECT_CALL(callback_ready_, ready());
+  retry_timer_->invokeCallback();
+
+  // reset header present -> exponential backoff used
+  EXPECT_CALL(random_, random()).WillOnce(Return(190));
+  EXPECT_CALL(*retry_timer_, enableTimer(std::chrono::milliseconds(15), _));
+  EXPECT_EQ(RetryStatus::Yes, state_->shouldRetryHeaders(response_headers_plain, callback_));
+  EXPECT_CALL(callback_ready_, ready());
+  retry_timer_->invokeCallback();
+
+  // reset header present -> ratelimit backoff used
+  EXPECT_CALL(random_, random()).WillOnce(Return(190));
+  EXPECT_CALL(*retry_timer_, enableTimer(std::chrono::milliseconds(2190), _));
+  EXPECT_EQ(RetryStatus::Yes, state_->shouldRetryHeaders(response_headers_reset, callback_));
+  EXPECT_CALL(callback_ready_, ready());
+  retry_timer_->invokeCallback();
+
+  EXPECT_EQ(RetryStatus::NoRetryLimitExceeded,
+            state_->shouldRetryHeaders(response_headers_reset, callback_));
+}
+
 } // namespace
 } // namespace Router
 } // namespace Envoy
