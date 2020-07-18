@@ -182,18 +182,27 @@ void RetryStateImpl::enableBackoffTimer() {
   }
 
   if (ratelimit_backoff_strategy_ != nullptr) {
-    printf("Using ratelimit backoff\n");
-    // We use a fully jittered backoff strategy based on the ratelimit feedback.
+    // If we have a backoff strategy based on rate limit feedback from the response we use it.
     retry_timer_->enableTimer(
         std::chrono::milliseconds(ratelimit_backoff_strategy_->nextBackOffMs()));
 
-    // A ratelimit backoff strategy is only valid for the response that sent the ratelimit reset
-    // header, so make sure we always destruct it after setting the timer.
+    // The strategy is only valid for the response that sent the ratelimit reset header and cannot
+    // be reused.
     ratelimit_backoff_strategy_.reset();
+
+    cluster_.stats().upstream_rq_retry_backoff_ratelimited_.inc();
+    if (vcluster_) {
+      vcluster_->stats().upstream_rq_retry_backoff_ratelimited_.inc();
+    }
+
   } else {
-    printf("Using exponential backoff\n");
-    // We use a fully jittered exponential backoff algorithm.
+    // Otherwise we use a fully jittered exponential backoff algorithm.
     retry_timer_->enableTimer(std::chrono::milliseconds(backoff_strategy_->nextBackOffMs()));
+
+    cluster_.stats().upstream_rq_retry_backoff_exponential_.inc();
+    if (vcluster_) {
+      vcluster_->stats().upstream_rq_retry_backoff_exponential_.inc();
+    }
   }
 }
 
@@ -280,6 +289,7 @@ RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& respo
       }
     }
   }
+
   return absl::nullopt;
 }
 
