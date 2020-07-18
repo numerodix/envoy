@@ -248,19 +248,30 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
 
 absl::optional<std::chrono::milliseconds>
 RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const {
+  const auto time = dispatcher_.timeSource().systemTime().time_since_epoch();
+  uint64_t ts = std::chrono::duration_cast<std::chrono::seconds>(time).count();
+  printf("current time: %lu\n", ts);
+
   for (const auto& reset_header : ratelimit_reset_headers_) {
     if (reset_header->matchesHeaders(response_headers)) {
       const Http::LowerCaseString& header_name = reset_header->name();
       const Http::HeaderEntry* entry = response_headers.get(header_name);
+
       if (entry != nullptr) {
         const auto& header_value = entry->value().getStringView();
-        unsigned long out;
-        if (absl::SimpleAtoi(header_value, &out)) {
-          printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), out);
 
-          const auto interval = std::chrono::milliseconds(out * 1000UL);
+        uint64_t num_seconds;
+        if (absl::SimpleAtoi(header_value, &num_seconds)) {
+          printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), num_seconds);
 
+          // The value is big enough to be a timestamp
+          if (num_seconds > ts) {
+            num_seconds = num_seconds - ts;
+          }
+
+          const auto interval = std::chrono::milliseconds(num_seconds * 1000UL);
           if (interval <= ratelimit_reset_max_interval_) {
+            printf("reset interval (ms): %lu\n", interval.count());
             return absl::optional<std::chrono::milliseconds>(interval);
           }
         }
@@ -337,6 +348,7 @@ RetryStatus RetryStateImpl::shouldRetryHeaders(const Http::ResponseHeaderMap& re
   // response
   if (would_retry) {
     const auto backoff_interval = parseRateLimitResetInterval(response_headers);
+    printf("\n");
     if (backoff_interval.has_value()) {
       ratelimit_backoff_strategy_ = std::make_unique<JitteredLowerBoundBackOffStrategy>(
           backoff_interval.value().count(), random_);
