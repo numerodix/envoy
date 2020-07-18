@@ -251,9 +251,9 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
 
 absl::optional<std::chrono::milliseconds>
 RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const {
-  const auto time = time_source_.systemTime().time_since_epoch();
-  uint64_t ts = std::chrono::duration_cast<std::chrono::seconds>(time).count();
-  printf("current time: %lu\n", ts);
+  const auto time_now = time_source_.systemTime().time_since_epoch();
+  uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(time_now).count();
+  printf("current time: %lu\n", timestamp);
 
   for (const auto& reset_header : ratelimit_reset_headers_) {
     if (reset_header->matchesHeaders(response_headers)) {
@@ -263,16 +263,19 @@ RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& respo
       if (entry != nullptr) {
         const auto& header_value = entry->value().getStringView();
 
+        // Try to parse the value of the header as an int storing the number of seconds
         uint64_t num_seconds;
         if (absl::SimpleAtoi(header_value, &num_seconds)) {
           printf("parsed header: '%s' value: %lu\n", header_name.get().c_str(), num_seconds);
 
-          // The value is big enough to be a timestamp
-          if (num_seconds > ts) {
-            num_seconds = num_seconds - ts;
+          // Is the value big enough to be a unix timestamp rather than an interval?
+          if (num_seconds > timestamp) {
+            num_seconds = num_seconds - timestamp;
           }
 
           const auto interval = std::chrono::milliseconds(num_seconds * 1000UL);
+
+          // Is the interval value within our accepted range?
           if (interval <= ratelimit_reset_max_interval_) {
             printf("reset interval (ms): %lu\n", interval.count());
             return absl::optional<std::chrono::milliseconds>(interval);
