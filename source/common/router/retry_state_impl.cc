@@ -33,18 +33,20 @@ const uint32_t RetryPolicy::RETRY_ON_GRPC_DEADLINE_EXCEEDED;
 const uint32_t RetryPolicy::RETRY_ON_GRPC_RESOURCE_EXHAUSTED;
 const uint32_t RetryPolicy::RETRY_ON_GRPC_UNAVAILABLE;
 
-RetryStatePtr
-RetryStateImpl::create(const RetryPolicy& route_policy, Http::RequestHeaderMap& request_headers,
-                       const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
-                       Runtime::Loader& runtime, Runtime::RandomGenerator& random,
-                       Event::Dispatcher& dispatcher, Upstream::ResourcePriority priority) {
+RetryStatePtr RetryStateImpl::create(const RetryPolicy& route_policy,
+                                     Http::RequestHeaderMap& request_headers,
+                                     const Upstream::ClusterInfo& cluster,
+                                     const VirtualCluster* vcluster, Runtime::Loader& runtime,
+                                     Runtime::RandomGenerator& random,
+                                     Event::Dispatcher& dispatcher, TimeSource& time_source,
+                                     Upstream::ResourcePriority priority) {
   RetryStatePtr ret;
 
   // We short circuit here and do not bother with an allocation if there is no chance we will retry.
   if (request_headers.EnvoyRetryOn() || request_headers.EnvoyRetryGrpcOn() ||
       route_policy.retryOn()) {
     ret.reset(new RetryStateImpl(route_policy, request_headers, cluster, vcluster, runtime, random,
-                                 dispatcher, priority));
+                                 dispatcher, time_source, priority));
   }
 
   // Consume all retry related headers to avoid them being propagated to the upstream
@@ -65,9 +67,10 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
                                Http::RequestHeaderMap& request_headers,
                                const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
                                Runtime::Loader& runtime, Runtime::RandomGenerator& random,
-                               Event::Dispatcher& dispatcher, Upstream::ResourcePriority priority)
+                               Event::Dispatcher& dispatcher, TimeSource& time_source,
+                               Upstream::ResourcePriority priority)
     : cluster_(cluster), vcluster_(vcluster), runtime_(runtime), random_(random),
-      dispatcher_(dispatcher), retry_on_(route_policy.retryOn()),
+      dispatcher_(dispatcher), time_source_(time_source), retry_on_(route_policy.retryOn()),
       retries_remaining_(route_policy.numRetries()), priority_(priority),
       retry_host_predicates_(route_policy.retryHostPredicates()),
       retry_priority_(route_policy.retryPriority()),
@@ -248,7 +251,7 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
 
 absl::optional<std::chrono::milliseconds>
 RetryStateImpl::parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const {
-  const auto time = dispatcher_.timeSource().systemTime().time_since_epoch();
+  const auto time = time_source_.systemTime().time_since_epoch();
   uint64_t ts = std::chrono::duration_cast<std::chrono::seconds>(time).count();
   printf("current time: %lu\n", ts);
 
