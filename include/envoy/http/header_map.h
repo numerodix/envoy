@@ -768,6 +768,9 @@ class HeaderMatcher {
 public:
   virtual ~HeaderMatcher() = default;
 
+  /**
+   * @return the header name the matcher will match against.
+   */
   virtual const LowerCaseString& name() const PURE;
 
   /**

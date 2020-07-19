@@ -151,9 +151,9 @@ public:
   const LowerCaseString EnvoyOverloaded{absl::StrCat(prefix(), "-overloaded")};
   const LowerCaseString EnvoyRateLimited{absl::StrCat(prefix(), "-ratelimited")};
   const LowerCaseString EnvoyRateLimitedResetHeaders{
-      absl::StrCat(prefix(), "-rate-limited-reset-headers")};
+      absl::StrCat(prefix(), "-ratelimited-reset-headers")};
   const LowerCaseString EnvoyRateLimitedResetMaxIntervalMs{
-      absl::StrCat(prefix(), "-rate-limited-reset-max-interval-ms")};
+      absl::StrCat(prefix(), "-ratelimited-reset-max-interval-ms")};
   const LowerCaseString EnvoyRetryOn{absl::StrCat(prefix(), "-retry-on")};
   const LowerCaseString EnvoyRetryGrpcOn{absl::StrCat(prefix(), "-retry-grpc-on")};
   const LowerCaseString EnvoyRetriableStatusCodes{
@@ -256,7 +256,7 @@ public:
     const std::string _5xx{"5xx"};
     const std::string GatewayError{"gateway-error"};
     const std::string ConnectFailure{"connect-failure"};
-    const std::string EnvoyRateLimited{"envoy-rate-limited"};
+    const std::string EnvoyRateLimited{"envoy-ratelimited"};
     const std::string RefusedStream{"refused-stream"};
     const std::string Retriable4xx{"retriable-4xx"};
     const std::string RetriableStatusCodes{"retriable-status-codes"};

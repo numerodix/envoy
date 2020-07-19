@@ -50,6 +50,7 @@ public:
    */
   JitteredLowerBoundBackOffStrategy(uint64_t min_interval, Random::RandomGenerator& random);
 
+  // BackOffStrategy methods
   uint64_t nextBackOffMs() override;
   void reset() override {}
 

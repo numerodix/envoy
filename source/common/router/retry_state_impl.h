@@ -51,11 +51,10 @@ public:
    */
   static std::pair<uint32_t, bool> parseRetryGrpcOn(absl::string_view retry_grpc_on_header);
 
-  absl::optional<std::chrono::milliseconds>
-  parseRateLimitResetInterval(const Http::ResponseHeaderMap& response_headers) const override;
-
   // Router::RetryState
   bool enabled() override { return retry_on_ != 0; }
+  absl::optional<std::chrono::milliseconds>
+  parseRateLimitedResetInterval(const Http::ResponseHeaderMap& response_headers) const override;
   RetryStatus shouldRetryHeaders(const Http::ResponseHeaderMap& response_headers,
                                  DoRetryCallback callback) override;
   // Returns true if the retry policy would retry the passed headers. Does not
@@ -92,11 +91,12 @@ public:
 
   uint32_t hostSelectionMaxAttempts() const override { return host_selection_max_attempts_; }
 
-  const std::vector<Http::HeaderMatcherSharedPtr>& ratelimitResetHeaders() const override {
-    return ratelimit_reset_headers_;
+  const std::vector<Http::HeaderMatcherSharedPtr>& rateLimitedResetHeaders() const override {
+    return ratelimited_reset_headers_;
   }
-  std::chrono::milliseconds ratelimitResetMaxInterval() const override {
-    return ratelimit_reset_max_interval_;
+
+  std::chrono::milliseconds rateLimitedResetMaxInterval() const override {
+    return ratelimited_reset_max_interval_;
   }
 
 private:
@@ -123,14 +123,14 @@ private:
   Event::TimerPtr retry_timer_;
   Upstream::ResourcePriority priority_;
   BackOffStrategyPtr backoff_strategy_;
-  BackOffStrategyPtr ratelimit_backoff_strategy_{};
+  BackOffStrategyPtr ratelimited_backoff_strategy_{};
   std::vector<Upstream::RetryHostPredicateSharedPtr> retry_host_predicates_;
   Upstream::RetryPrioritySharedPtr retry_priority_;
   uint32_t host_selection_max_attempts_;
   std::vector<uint32_t> retriable_status_codes_;
   std::vector<Http::HeaderMatcherSharedPtr> retriable_headers_;
-  std::vector<Http::HeaderMatcherSharedPtr> ratelimit_reset_headers_{};
-  std::chrono::milliseconds ratelimit_reset_max_interval_{300000};
+  std::vector<Http::HeaderMatcherSharedPtr> ratelimited_reset_headers_{};
+  std::chrono::milliseconds ratelimited_reset_max_interval_{300000};
 };
 
 } // namespace Router

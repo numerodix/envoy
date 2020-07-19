@@ -3595,22 +3595,22 @@ virtual_hosts:
   EXPECT_EQ(absl::nullopt, config.route(genHeaders("www.lyft.com", "/no-backoff", "GET"), 0)
                                ->routeEntry()
                                ->retryPolicy()
-                               .ratelimitResetMaxInterval());
+                               .rateLimitedResetMaxInterval());
   EXPECT_EQ(0, config.route(genHeaders("www.lyft.com", "/no-backoff", "GET"), 0)
                    ->routeEntry()
                    ->retryPolicy()
-                   .ratelimitResetHeaders()
+                   .rateLimitedResetHeaders()
                    .size());
 
   // has empty ratelimit retry back off
   EXPECT_EQ(absl::nullopt, config.route(genHeaders("www.lyft.com", "/empty-backoff", "GET"), 0)
                                ->routeEntry()
                                ->retryPolicy()
-                               .ratelimitResetMaxInterval());
+                               .rateLimitedResetMaxInterval());
   EXPECT_EQ(0, config.route(genHeaders("www.lyft.com", "/empty-backoff", "GET"), 0)
                    ->routeEntry()
                    ->retryPolicy()
-                   .ratelimitResetHeaders()
+                   .rateLimitedResetHeaders()
                    .size());
 
   // has sub millisecond interval
@@ -3618,21 +3618,21 @@ virtual_hosts:
             config.route(genHeaders("www.lyft.com", "/sub-ms-interval", "GET"), 0)
                 ->routeEntry()
                 ->retryPolicy()
-                .ratelimitResetMaxInterval());
+                .rateLimitedResetMaxInterval());
 
   // has a ratelimit retry back off
   Http::TestRequestHeaderMapImpl headers = genHeaders("www.lyft.com", "/typical-backoff", "GET");
   const auto& retry_policy = config.route(headers, 0)->routeEntry()->retryPolicy();
-  EXPECT_EQ(2, retry_policy.ratelimitResetHeaders().size());
+  EXPECT_EQ(2, retry_policy.rateLimitedResetHeaders().size());
 
   Http::TestResponseHeaderMapImpl expected_0{{"Retry-After", "not-used"}};
   Http::TestResponseHeaderMapImpl expected_1{{"RateLimit-Reset", "not-used"}};
 
-  EXPECT_TRUE(retry_policy.ratelimitResetHeaders()[0]->matchesHeaders(expected_0));
-  EXPECT_TRUE(retry_policy.ratelimitResetHeaders()[1]->matchesHeaders(expected_1));
+  EXPECT_TRUE(retry_policy.rateLimitedResetHeaders()[0]->matchesHeaders(expected_0));
+  EXPECT_TRUE(retry_policy.rateLimitedResetHeaders()[1]->matchesHeaders(expected_1));
 
   EXPECT_EQ(absl::optional<std::chrono::milliseconds>(50),
-            retry_policy.ratelimitResetMaxInterval());
+            retry_policy.rateLimitedResetMaxInterval());
 }
 
 TEST_F(RouteMatcherTest, HedgeRouteLevel) {
