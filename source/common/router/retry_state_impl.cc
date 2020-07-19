@@ -162,8 +162,12 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
     ratelimit_reset_max_interval_ = route_policy.ratelimitResetMaxInterval().value();
   }
 
-  // Do equivalent of retriable-header names ^ for rate limit reset headers
   if (request_headers.EnvoyRateLimitedResetHeaders()) {
+    // Ratelimit reset headers in the configuration are specified via HeaderMatcher.
+    // Giving the same flexibility via request header would require the user
+    // to provide a HeaderMatcher serialized into a string. To avoid this extra
+    // complexity we only support name-only header matchers via request
+    // header. Anything more sophisticated needs to be provided via config.
     for (const auto header_name : StringUtil::splitToken(
              request_headers.EnvoyRateLimitedResetHeaders()->value().getStringView(), ",")) {
       envoy::config::route::v3::HeaderMatcher header_matcher;
