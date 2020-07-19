@@ -25,7 +25,7 @@ uint64_t JitteredBackOffStrategy::nextBackOffMs() {
 void JitteredBackOffStrategy::reset() { next_interval_ = base_interval_; }
 
 JitteredLowerBoundBackOffStrategy::JitteredLowerBoundBackOffStrategy(
-    uint64_t min_interval, Runtime::RandomGenerator& random)
+    uint64_t min_interval, Random::RandomGenerator& random)
     : min_interval_(min_interval), random_(random) {}
 
 uint64_t JitteredLowerBoundBackOffStrategy::nextBackOffMs() {

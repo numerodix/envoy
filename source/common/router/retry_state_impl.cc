@@ -37,9 +37,8 @@ RetryStatePtr RetryStateImpl::create(const RetryPolicy& route_policy,
                                      Http::RequestHeaderMap& request_headers,
                                      const Upstream::ClusterInfo& cluster,
                                      const VirtualCluster* vcluster, Runtime::Loader& runtime,
-                                     Runtime::RandomGenerator& random,
-                                     Event::Dispatcher& dispatcher, TimeSource& time_source,
-                                     Upstream::ResourcePriority priority) {
+                                     Random::RandomGenerator& random, Event::Dispatcher& dispatcher,
+                                     TimeSource& time_source, Upstream::ResourcePriority priority) {
   RetryStatePtr ret;
 
   // We short circuit here and do not bother with an allocation if there is no chance we will retry.
@@ -66,7 +65,7 @@ RetryStatePtr RetryStateImpl::create(const RetryPolicy& route_policy,
 RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
                                Http::RequestHeaderMap& request_headers,
                                const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
-                               Runtime::Loader& runtime, Runtime::RandomGenerator& random,
+                               Runtime::Loader& runtime, Random::RandomGenerator& random,
                                Event::Dispatcher& dispatcher, TimeSource& time_source,
                                Upstream::ResourcePriority priority)
     : cluster_(cluster), vcluster_(vcluster), runtime_(runtime), random_(random),

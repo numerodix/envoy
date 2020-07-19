@@ -476,7 +476,7 @@ private:
                                          Http::RequestHeaderMap& request_headers,
                                          const Upstream::ClusterInfo& cluster,
                                          const VirtualCluster* vcluster, Runtime::Loader& runtime,
-                                         Runtime::RandomGenerator& random,
+                                         Random::RandomGenerator& random,
                                          Event::Dispatcher& dispatcher, TimeSource& time_source,
                                          Upstream::ResourcePriority priority) PURE;
 
@@ -566,7 +566,7 @@ private:
   RetryStatePtr createRetryState(const RetryPolicy& policy, Http::RequestHeaderMap& request_headers,
                                  const Upstream::ClusterInfo& cluster,
                                  const VirtualCluster* vcluster, Runtime::Loader& runtime,
-                                 Runtime::RandomGenerator& random, Event::Dispatcher& dispatcher,
+                                 Random::RandomGenerator& random, Event::Dispatcher& dispatcher,
                                  TimeSource& time_source,
                                  Upstream::ResourcePriority priority) override;
 };

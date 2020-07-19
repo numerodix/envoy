@@ -28,7 +28,7 @@ public:
   static RetryStatePtr create(const RetryPolicy& route_policy,
                               Http::RequestHeaderMap& request_headers,
                               const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
-                              Runtime::Loader& runtime, Runtime::RandomGenerator& random,
+                              Runtime::Loader& runtime, Random::RandomGenerator& random,
                               Event::Dispatcher& dispatcher, TimeSource& time_source,
                               Upstream::ResourcePriority priority);
   ~RetryStateImpl() override;
@@ -102,7 +102,7 @@ public:
 private:
   RetryStateImpl(const RetryPolicy& route_policy, Http::RequestHeaderMap& request_headers,
                  const Upstream::ClusterInfo& cluster, const VirtualCluster* vcluster,
-                 Runtime::Loader& runtime, Runtime::RandomGenerator& random,
+                 Runtime::Loader& runtime, Random::RandomGenerator& random,
                  Event::Dispatcher& dispatcher, TimeSource& time_source,
                  Upstream::ResourcePriority priority);
 

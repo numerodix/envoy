@@ -165,6 +165,8 @@ public:
   void expectResetRetry();
 
   MOCK_METHOD(bool, enabled, ());
+  MOCK_METHOD(absl::optional<std::chrono::milliseconds>, parseRateLimitResetInterval,
+              (const Http::ResponseHeaderMap& response_headers), (const));
   MOCK_METHOD(RetryStatus, shouldRetryHeaders,
               (const Http::ResponseHeaderMap& response_headers, DoRetryCallback callback));
   MOCK_METHOD(bool, wouldRetryFromHeaders, (const Http::ResponseHeaderMap& response_headers));
@@ -177,6 +179,8 @@ public:
               (const Upstream::PrioritySet&, const Upstream::HealthyAndDegradedLoad&,
                const Upstream::RetryPriority::PriorityMappingFunc&));
   MOCK_METHOD(uint32_t, hostSelectionMaxAttempts, (), (const));
+  MOCK_METHOD(const std::vector<Http::HeaderMatcherSharedPtr>&, ratelimitResetHeaders, (), (const));
+  MOCK_METHOD(std::chrono::milliseconds, ratelimitResetMaxInterval, (), (const));
 
   DoRetryCallback callback_;
 };

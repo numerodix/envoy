@@ -79,7 +79,7 @@ TEST(BackOffStrategyTest, JitteredBackOffWithMaxIntervalReset) {
 }
 
 TEST(BackOffStrategyTest, JitteredLowerBoundBackOffWithLowRandomValue) {
-  NiceMock<Runtime::MockRandomGenerator> random;
+  NiceMock<Random::MockRandomGenerator> random;
   ON_CALL(random, random()).WillByDefault(Return(22));
 
   JitteredLowerBoundBackOffStrategy jittered_lower_bound_back_off(500, random);
@@ -87,7 +87,7 @@ TEST(BackOffStrategyTest, JitteredLowerBoundBackOffWithLowRandomValue) {
 }
 
 TEST(BackOffStrategyTest, JitteredLowerBoundBackOffWithHighRandomValue) {
-  NiceMock<Runtime::MockRandomGenerator> random;
+  NiceMock<Random::MockRandomGenerator> random;
   ON_CALL(random, random()).WillByDefault(Return(9999));
 
   JitteredLowerBoundBackOffStrategy jittered_lower_bound_back_off(500, random);

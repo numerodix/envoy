@@ -48,14 +48,14 @@ public:
    * @param min_interval the lower bound on the next backoff value.
    * @param random the random generator.
    */
-  JitteredLowerBoundBackOffStrategy(uint64_t min_interval, Runtime::RandomGenerator& random);
+  JitteredLowerBoundBackOffStrategy(uint64_t min_interval, Random::RandomGenerator& random);
 
   uint64_t nextBackOffMs() override;
   void reset() override {}
 
 private:
   const uint64_t min_interval_;
-  Runtime::RandomGenerator& random_;
+  Random::RandomGenerator& random_;
 };
 
 /**
