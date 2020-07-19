@@ -48,10 +48,11 @@ public:
 
     // HeaderMatcher
     const LowerCaseString& name() const override {
-      // This getter is not really supposed to exist because HeaderMatcher is a variant like type.
-      // In practice this *should* be safe because in the ctor for HeaderData name_ is always
-      // populated from the protobuf message, and at worst it's the empty string which won't match
-      // any headers anyway.
+      // This getter exists so that once matchHeaders() has been called on a HeaderMap the concrete
+      // header in that map can be extracted by using this getter to discover its name. This is
+      // possible in all cases, except when invert_match_ is true, because in the latter case name_
+      // would *not* reflect the matching header.
+      ASSERT(!invert_match_);
       return name_;
     }
 
