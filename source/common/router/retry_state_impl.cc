@@ -263,8 +263,8 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
 
 absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetInterval(
     const Http::ResponseHeaderMap& response_headers) const {
-  const auto time_now = time_source_.systemTime().time_since_epoch();
-  uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(time_now).count();
+  bool parsed_value = false;
+  uint64_t num_seconds{};
 
   for (const auto& reset_header : ratelimited_reset_headers_) {
     if (reset_header->matchesHeaders(response_headers)) {
@@ -277,22 +277,28 @@ absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetI
           const auto& header_value = entry->value().getStringView();
 
           // Try to parse the value of the header as an int storing the number of seconds
-          uint64_t num_seconds;
           if (absl::SimpleAtoi(header_value, &num_seconds)) {
-            // Is the value big enough to be a unix timestamp rather than an interval?
-            if (num_seconds > timestamp) {
-              num_seconds = num_seconds - timestamp;
-            }
-
-            const auto interval = std::chrono::milliseconds(num_seconds * 1000UL);
-
-            // Is the interval value within our accepted range?
-            if (interval <= ratelimited_reset_max_interval_) {
-              return absl::optional<std::chrono::milliseconds>(interval);
-            }
+            parsed_value = true;
           }
         }
       }
+    }
+  }
+
+  if (parsed_value) {
+    const auto time_now = time_source_.systemTime().time_since_epoch();
+    uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(time_now).count();
+
+    // Is the value big enough to be a unix timestamp rather than an interval?
+    if (num_seconds > timestamp) {
+      num_seconds = num_seconds - timestamp;
+    }
+
+    const auto interval = std::chrono::milliseconds(num_seconds * 1000UL);
+
+    // Is the interval value within our accepted range?
+    if (interval <= ratelimited_reset_max_interval_) {
+      return absl::optional<std::chrono::milliseconds>(interval);
     }
   }
 
