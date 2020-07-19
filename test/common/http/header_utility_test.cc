@@ -510,8 +510,8 @@ name: match-header
       std::make_unique<HeaderUtility::HeaderData>(parseHeaderMatcherFromYaml(yaml)));
   EXPECT_TRUE(HeaderUtility::matchHeaders(matching_headers, header_data));
 
-  const absl::optional<LowerCaseString> header_name = header_data[0]->name();
-  EXPECT_EQ("match-header", header_name.value().get());
+  const LowerCaseString* header_name = header_data[0]->name();
+  EXPECT_EQ("match-header", header_name->get());
 }
 
 TEST(MatchHeadersTest, HeaderNameGetterInverse) {
@@ -526,8 +526,8 @@ invert_match: true
       std::make_unique<HeaderUtility::HeaderData>(parseHeaderMatcherFromYaml(yaml)));
   EXPECT_TRUE(HeaderUtility::matchHeaders(unmatching_headers, header_data));
 
-  const absl::optional<LowerCaseString> header_name = header_data[0]->name();
-  EXPECT_EQ(absl::nullopt, header_name);
+  const LowerCaseString* header_name = header_data[0]->name();
+  EXPECT_EQ(nullptr, header_name);
 }
 
 TEST(HeaderIsValidTest, InvalidHeaderValuesAreRejected) {

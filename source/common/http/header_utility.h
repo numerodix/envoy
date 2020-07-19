@@ -47,11 +47,11 @@ public:
     const bool invert_match_;
 
     // HeaderMatcher
-    const absl::optional<LowerCaseString> name() const override {
+    const LowerCaseString* name() const override {
       if (invert_match_) {
-        return absl::nullopt;
+        return nullptr;
       }
-      return absl::optional<LowerCaseString>(name_);
+      return &name_;
     }
 
     bool matchesHeaders(const HeaderMap& headers) const override {

@@ -268,10 +268,10 @@ absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetI
 
   for (const auto& reset_header : ratelimited_reset_headers_) {
     if (reset_header->matchesHeaders(response_headers)) {
-      const absl::optional<Http::LowerCaseString> header_name = reset_header->name();
+      const Http::LowerCaseString* header_name = reset_header->name();
 
-      if (header_name.has_value()) {
-        const Http::HeaderEntry* entry = response_headers.get(header_name.value());
+      if (header_name != nullptr) {
+        const Http::HeaderEntry* entry = response_headers.get(*header_name);
 
         if (entry != nullptr) {
           const auto& header_value = entry->value().getStringView();

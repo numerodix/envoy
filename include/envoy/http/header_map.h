@@ -776,7 +776,7 @@ public:
    * reflect the matching header.
    * @return the header name the matcher will match against.
    */
-  virtual const absl::optional<LowerCaseString> name() const PURE;
+  virtual const LowerCaseString* name() const PURE;
 
   /**
    * Check whether header matcher matches any headers in a given HeaderMap.
