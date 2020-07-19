@@ -47,13 +47,11 @@ public:
     const bool invert_match_;
 
     // HeaderMatcher
-    const LowerCaseString& name() const override {
-      // This getter exists so that once matchHeaders() has been called on a HeaderMap the concrete
-      // header in that map can be extracted by using this getter to discover its name. This is
-      // possible in all cases, except when invert_match_ is true, because in the latter case name_
-      // would *not* reflect the matching header.
-      ASSERT(!invert_match_);
-      return name_;
+    const absl::optional<LowerCaseString> name() const override {
+      if (invert_match_) {
+        return absl::nullopt;
+      }
+      return absl::optional<LowerCaseString>(name_);
     }
 
     bool matchesHeaders(const HeaderMap& headers) const override {

@@ -268,25 +268,28 @@ absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetI
 
   for (const auto& reset_header : ratelimited_reset_headers_) {
     if (reset_header->matchesHeaders(response_headers)) {
-      const Http::LowerCaseString& header_name = reset_header->name();
-      const Http::HeaderEntry* entry = response_headers.get(header_name);
+      const absl::optional<Http::LowerCaseString> header_name = reset_header->name();
 
-      if (entry != nullptr) {
-        const auto& header_value = entry->value().getStringView();
+      if (header_name.has_value()) {
+        const Http::HeaderEntry* entry = response_headers.get(header_name.value());
 
-        // Try to parse the value of the header as an int storing the number of seconds
-        uint64_t num_seconds;
-        if (absl::SimpleAtoi(header_value, &num_seconds)) {
-          // Is the value big enough to be a unix timestamp rather than an interval?
-          if (num_seconds > timestamp) {
-            num_seconds = num_seconds - timestamp;
-          }
+        if (entry != nullptr) {
+          const auto& header_value = entry->value().getStringView();
 
-          const auto interval = std::chrono::milliseconds(num_seconds * 1000UL);
+          // Try to parse the value of the header as an int storing the number of seconds
+          uint64_t num_seconds;
+          if (absl::SimpleAtoi(header_value, &num_seconds)) {
+            // Is the value big enough to be a unix timestamp rather than an interval?
+            if (num_seconds > timestamp) {
+              num_seconds = num_seconds - timestamp;
+            }
 
-          // Is the interval value within our accepted range?
-          if (interval <= ratelimited_reset_max_interval_) {
-            return absl::optional<std::chrono::milliseconds>(interval);
+            const auto interval = std::chrono::milliseconds(num_seconds * 1000UL);
+
+            // Is the interval value within our accepted range?
+            if (interval <= ratelimited_reset_max_interval_) {
+              return absl::optional<std::chrono::milliseconds>(interval);
+            }
           }
         }
       }
