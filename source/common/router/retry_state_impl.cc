@@ -90,8 +90,8 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
     max_interval = *route_policy.maxInterval();
   }
 
-  backoff_strategy_ = std::make_unique<JitteredBackOffStrategy>(base_interval.count(),
-                                                                max_interval.count(), random_);
+  backoff_strategy_ = std::make_unique<JitteredExponentialBackOffStrategy>(
+      base_interval.count(), max_interval.count(), random_);
   host_selection_max_attempts_ = route_policy.hostSelectionMaxAttempts();
 
   // Merge in the headers.

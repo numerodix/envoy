@@ -13,7 +13,7 @@ namespace Envoy {
 /**
  * Implementation of BackOffStrategy that uses a fully jittered exponential backoff algorithm.
  */
-class JitteredBackOffStrategy : public BackOffStrategy {
+class JitteredExponentialBackOffStrategy : public BackOffStrategy {
 
 public:
   /**
@@ -23,8 +23,8 @@ public:
    * @param max_interval the cap on the next backoff value.
    * @param random the random generator.
    */
-  JitteredBackOffStrategy(uint64_t base_interval, uint64_t max_interval,
-                          Random::RandomGenerator& random);
+  JitteredExponentialBackOffStrategy(uint64_t base_interval, uint64_t max_interval,
+                                     Random::RandomGenerator& random);
 
   // BackOffStrategy methods
   uint64_t nextBackOffMs() override;
