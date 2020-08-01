@@ -1325,7 +1325,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
     Http::TestRequestHeaderMapImpl request_headers{
         {"x-envoy-retry-on", "5xx,retriable-header-names,retriable-status-codes"},
         {"x-envoy-retry-grpc-on", "resource-exhausted"},
-        {"x-envoy-ratelimited-reset-headers", "Retry-After"},
         {"x-envoy-retriable-header-names", "X-Upstream-Pushback"},
         {"x-envoy-retriable-status-codes", "418,420"},
         {"x-envoy-max-retries", "7"},
@@ -1338,7 +1337,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
     EXPECT_FALSE(request_headers.has("x-envoy-retry-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-retry-grpc-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-max-retries"));
-    EXPECT_FALSE(request_headers.has("x-envoy-ratelimited-reset-headers"));
     EXPECT_FALSE(request_headers.has("x-envoy-retriable-header-names"));
     EXPECT_FALSE(request_headers.has("x-envoy-retriable-status-codes"));
     EXPECT_FALSE(request_headers.has("x-envoy-hedge-on-per-try-timeout"));
@@ -1348,7 +1346,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
   // Make sure retry related headers are removed even if the policy is disabled.
   {
     Http::TestRequestHeaderMapImpl request_headers{
-        {"x-envoy-ratelimited-reset-headers", "Retry-After"},
         {"x-envoy-retriable-header-names", "X-Upstream-Pushback"},
         {"x-envoy-retriable-status-codes", "418,420"},
         {"x-envoy-max-retries", "7"},
@@ -1361,7 +1358,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
     EXPECT_FALSE(request_headers.has("x-envoy-retry-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-retry-grpc-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-max-retries"));
-    EXPECT_FALSE(request_headers.has("x-envoy-ratelimited-reset-headers"));
     EXPECT_FALSE(request_headers.has("x-envoy-retriable-header-names"));
     EXPECT_FALSE(request_headers.has("x-envoy-retriable-status-codes"));
     EXPECT_FALSE(request_headers.has("x-envoy-hedge-on-per-try-timeout"));
@@ -1377,7 +1373,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
     Http::TestRequestHeaderMapImpl request_headers{
         {"x-envoy-retry-on", "5xx,retriable-header-names,retriable-status-codes"},
         {"x-envoy-retry-grpc-on", "resource-exhausted"},
-        {"x-envoy-ratelimited-reset-headers", "Retry-After"},
         {"x-envoy-retriable-header-names", "X-Upstream-Pushback"},
         {"x-envoy-retriable-status-codes", "418,420"},
         {"x-envoy-max-retries", "7"},
@@ -1390,7 +1385,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
     EXPECT_FALSE(request_headers.has("x-envoy-retry-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-retry-grpc-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-max-retries"));
-    EXPECT_FALSE(request_headers.has("x-envoy-ratelimited-reset-headers"));
     EXPECT_TRUE(request_headers.has("x-envoy-retriable-header-names"));
     EXPECT_TRUE(request_headers.has("x-envoy-retriable-status-codes"));
     EXPECT_TRUE(request_headers.has("x-envoy-hedge-on-per-try-timeout"));
@@ -1404,7 +1398,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
         {{"envoy.reloadable_features.consume_all_retry_headers", "false"}});
 
     Http::TestRequestHeaderMapImpl request_headers{
-        {"x-envoy-ratelimited-reset-headers", "Retry-After"},
         {"x-envoy-retriable-header-names", "X-Upstream-Pushback"},
         {"x-envoy-retriable-status-codes", "418,420"},
         {"x-envoy-max-retries", "7"},
@@ -1417,7 +1410,6 @@ TEST_F(RouterRetryStateImplTest, RemoveAllRetryHeaders) {
     EXPECT_FALSE(request_headers.has("x-envoy-retry-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-retry-grpc-on"));
     EXPECT_FALSE(request_headers.has("x-envoy-max-retries"));
-    EXPECT_FALSE(request_headers.has("x-envoy-ratelimited-reset-headers"));
     EXPECT_TRUE(request_headers.has("x-envoy-retriable-header-names"));
     EXPECT_TRUE(request_headers.has("x-envoy-retriable-status-codes"));
     EXPECT_TRUE(request_headers.has("x-envoy-hedge-on-per-try-timeout"));

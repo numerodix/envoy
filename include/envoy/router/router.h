@@ -240,7 +240,8 @@ public:
    * @return std::vector<Http::HeaderMatcherSharedPt>& list of response header
    * matchers that will be attempted to extract a rate limited maximum retry interval.
    */
-  virtual const std::vector<Http::HeaderMatcherSharedPtr>& rateLimitedResetHeaders() const PURE;
+  virtual const std::vector<Http::RateLimitedResetHeaderParserSharedPtr>&
+  rateLimitedResetHeaders() const PURE;
 
   /**
    * @return absl::optional<std::chrono::milliseconds> limit placed on a rate limited retry
@@ -394,11 +395,6 @@ public:
    * return how many times host selection should be reattempted during host selection.
    */
   virtual uint32_t hostSelectionMaxAttempts() const PURE;
-
-  /**
-   * @return the rate limited reset headers used to match against rate limited responses.
-   */
-  virtual const std::vector<Http::HeaderMatcherSharedPtr>& rateLimitedResetHeaders() const PURE;
 };
 
 using RetryStatePtr = std::unique_ptr<RetryState>;

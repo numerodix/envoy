@@ -1048,6 +1048,12 @@ message RouteAction {
 message RetryPolicy {
   option (udpa.annotations.versioning).previous_message_type = "envoy.api.v2.route.RetryPolicy";
 
+  // TODO: Maybe add a doc string here
+  enum ResetHeaderFormat {
+    SECONDS = 0;
+    UNIX_TIMESTAMP = 1;
+  }
+
   message RetryPriority {
     option (udpa.annotations.versioning).previous_message_type =
         "envoy.api.v2.route.RetryPolicy.RetryPriority";
@@ -1138,11 +1144,6 @@ message RetryPolicy {
   //   to be retried. You will still need to configure the right retry policy to match
   //   the responses from the upstream server.
   message RateLimitedRetryBackOff {
-    enum ResetHeaderFormat {
-      SECONDS = 0;
-      UNIX_TIMESTAMP = 1;
-    }
-
     message ResetHeader {
       string name = 1 [
         (validate.rules).string = {min_bytes: 1 well_known_regex: HTTP_HEADER_NAME strict: false}

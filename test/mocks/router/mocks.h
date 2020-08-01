@@ -122,7 +122,8 @@ public:
   std::chrono::milliseconds rateLimitedResetMaxInterval() const override {
     return ratelimited_reset_max_interval_;
   }
-  const std::vector<Http::HeaderMatcherSharedPtr>& rateLimitedResetHeaders() const override {
+  const std::vector<Http::RateLimitedResetHeaderParserSharedPtr>&
+  rateLimitedResetHeaders() const override {
     return ratelimited_reset_headers_;
   }
 
@@ -135,7 +136,7 @@ public:
   std::vector<Http::HeaderMatcherSharedPtr> retriable_request_headers_;
   absl::optional<std::chrono::milliseconds> base_interval_{};
   absl::optional<std::chrono::milliseconds> max_interval_{};
-  std::vector<Http::HeaderMatcherSharedPtr> ratelimited_reset_headers_;
+  std::vector<Http::RateLimitedResetHeaderParserSharedPtr> ratelimited_reset_headers_{};
   std::chrono::milliseconds ratelimited_reset_max_interval_{300000};
 };
 
@@ -179,8 +180,6 @@ public:
               (const Upstream::PrioritySet&, const Upstream::HealthyAndDegradedLoad&,
                const Upstream::RetryPriority::PriorityMappingFunc&));
   MOCK_METHOD(uint32_t, hostSelectionMaxAttempts, (), (const));
-  MOCK_METHOD(const std::vector<Http::HeaderMatcherSharedPtr>&, rateLimitedResetHeaders, (),
-              (const));
 
   DoRetryCallback callback_;
 };

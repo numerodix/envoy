@@ -250,5 +250,48 @@ bool HeaderUtility::shouldCloseConnection(Http::Protocol protocol,
   return false;
 }
 
+RateLimitedResetHeaderUtility::HeaderData::HeaderData(
+    const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config)
+    : name_(config.name()) {
+  switch (config.format()) {
+  case envoy::config::route::v3::RetryPolicy::SECONDS:
+    format_ = RateLimitedResetHeaderUtility::Format::Seconds;
+    break;
+  case envoy::config::route::v3::RetryPolicy::UNIX_TIMESTAMP:
+    format_ = RateLimitedResetHeaderUtility::Format::UnixTimestamp;
+    break;
+  default:
+    // TODO: gcov not reached?
+    // NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
+    format_ = RateLimitedResetHeaderUtility::Format::Seconds;
+    break;
+  }
+}
+
+absl::optional<std::chrono::milliseconds>
+RateLimitedResetHeaderUtility::HeaderData::parseInterval(const HeaderMap& headers) const {
+  const HeaderEntry* header = headers.get(name_);
+
+  if (header == nullptr) {
+    return absl::nullopt;
+  }
+
+  const auto& header_value = header->value().getStringView();
+  uint64_t num_seconds{};
+
+  switch (format_) {
+  case RateLimitedResetHeaderUtility::Format::Seconds:
+    if (absl::SimpleAtoi(header_value, &num_seconds)) {
+      return absl::optional<std::chrono::milliseconds>(num_seconds * 1000UL);
+    }
+    break;
+
+  case RateLimitedResetHeaderUtility::Format::UnixTimestamp:
+    break;
+  }
+
+  return absl::nullopt;
+}
+
 } // namespace Http
 } // namespace Envoy
