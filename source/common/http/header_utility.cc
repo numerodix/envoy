@@ -139,6 +139,59 @@ bool HeaderUtility::matchHeaders(const HeaderMap& request_headers, const HeaderD
   return match != header_data.invert_match_;
 }
 
+HeaderUtility::ResetHeaderData::ResetHeaderData(
+    const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config)
+    : name_(config.name()) {
+  switch (config.format()) {
+  case envoy::config::route::v3::RetryPolicy::SECONDS:
+    format_ = HeaderUtility::ResetHeaderFormat::Seconds;
+    break;
+  case envoy::config::route::v3::RetryPolicy::UNIX_TIMESTAMP:
+    format_ = HeaderUtility::ResetHeaderFormat::UnixTimestamp;
+    break;
+  default:
+    NOT_REACHED_GCOVR_EXCL_LINE;
+  }
+}
+
+absl::optional<std::chrono::milliseconds>
+HeaderUtility::ResetHeaderData::parseInterval(TimeSource& time_source,
+                                              const HeaderMap& headers) const {
+  const HeaderEntry* header = headers.get(name_);
+
+  if (header == nullptr) {
+    return absl::nullopt;
+  }
+
+  const auto& header_value = header->value().getStringView();
+  uint64_t num_seconds{};
+
+  switch (format_) {
+  case HeaderUtility::ResetHeaderFormat::Seconds:
+    if (absl::SimpleAtoi(header_value, &num_seconds)) {
+      return absl::optional<std::chrono::milliseconds>(num_seconds * 1000UL);
+    }
+
+  case HeaderUtility::ResetHeaderFormat::UnixTimestamp:
+    if (absl::SimpleAtoi(header_value, &num_seconds)) {
+      const auto time_now = time_source.systemTime().time_since_epoch();
+      const uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(time_now).count();
+
+      if (num_seconds < timestamp) {
+        return absl::nullopt;
+      }
+
+      const uint64_t interval = num_seconds - timestamp;
+      return absl::optional<std::chrono::milliseconds>(interval * 1000UL);
+    }
+
+  default:
+    NOT_REACHED_GCOVR_EXCL_LINE;
+  }
+
+  return absl::nullopt;
+}
+
 bool HeaderUtility::headerValueIsValid(const absl::string_view header_value) {
   return nghttp2_check_header_value(reinterpret_cast<const uint8_t*>(header_value.data()),
                                     header_value.size()) != 0;
@@ -248,63 +301,6 @@ bool HeaderUtility::shouldCloseConnection(Http::Protocol protocol,
     return true;
   }
   return false;
-}
-
-HeaderUtility::ResetHeaderData::ResetHeaderData(
-    const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config)
-    : name_(config.name()) {
-  switch (config.format()) {
-  case envoy::config::route::v3::RetryPolicy::SECONDS:
-    format_ = HeaderUtility::ResetHeaderFormat::Seconds;
-    break;
-  case envoy::config::route::v3::RetryPolicy::UNIX_TIMESTAMP:
-    format_ = HeaderUtility::ResetHeaderFormat::UnixTimestamp;
-    break;
-  default:
-    // TODO: gcov not reached?
-    // NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-    format_ = HeaderUtility::ResetHeaderFormat::Seconds;
-    break;
-  }
-}
-
-absl::optional<std::chrono::milliseconds>
-HeaderUtility::ResetHeaderData::parseInterval(TimeSource& time_source,
-                                              const HeaderMap& headers) const {
-  const HeaderEntry* header = headers.get(name_);
-
-  if (header == nullptr) {
-    return absl::nullopt;
-  }
-
-  const auto& header_value = header->value().getStringView();
-  uint64_t num_seconds{};
-
-  switch (format_) {
-  case HeaderUtility::ResetHeaderFormat::Seconds:
-    if (absl::SimpleAtoi(header_value, &num_seconds)) {
-      return absl::optional<std::chrono::milliseconds>(num_seconds * 1000UL);
-    }
-    break;
-
-  case HeaderUtility::ResetHeaderFormat::UnixTimestamp:
-    if (absl::SimpleAtoi(header_value, &num_seconds)) {
-      const auto time_now = time_source.systemTime().time_since_epoch();
-      const uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(time_now).count();
-
-      if (num_seconds < timestamp) {
-        return absl::nullopt;
-      }
-
-      const uint64_t interval = num_seconds - timestamp;
-      return absl::optional<std::chrono::milliseconds>(interval * 1000UL);
-    }
-  }
-
-  // TODO: gcov not reached?
-  // NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
-
-  return absl::nullopt;
 }
 
 } // namespace Http
