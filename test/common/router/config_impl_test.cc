@@ -3596,11 +3596,11 @@ virtual_hosts:
                 ->routeEntry()
                 ->retryPolicy()
                 .resetMaxInterval());
-  // EXPECT_EQ(0, config.route(genHeaders("www.lyft.com", "/no-backoff", "GET"), 0)
-  //                  ->routeEntry()
-  //                  ->retryPolicy()
-  //                  .resetHeaders()
-  //                  .size());
+  EXPECT_EQ(true, config.route(genHeaders("www.lyft.com", "/no-backoff", "GET"), 0)
+                   ->routeEntry()
+                   ->retryPolicy()
+                   .resetHeaders()
+                   .empty());
 
   // has sub millisecond interval
   EXPECT_EQ(std::chrono::milliseconds(1),
