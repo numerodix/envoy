@@ -774,15 +774,6 @@ public:
   virtual ~HeaderMatcher() = default;
 
   /**
-   * This getter exists so that once matchHeaders() has been called on a HeaderMap the concrete
-   * header in that map can be extracted by using this getter to discover its name. This is possible
-   * in all cases, except when invert_match_ is true, because in the latter case name_ would *not*
-   * reflect the matching header.
-   * @return the header name the matcher will match against.
-   */
-  virtual const LowerCaseString* name() const PURE;
-
-  /**
    * Check whether header matcher matches any headers in a given HeaderMap.
    */
   virtual bool matchesHeaders(const HeaderMap& headers) const PURE;
