@@ -121,8 +121,8 @@ private:
   uint32_t host_selection_max_attempts_;
   std::vector<uint32_t> retriable_status_codes_;
   std::vector<Http::HeaderMatcherSharedPtr> retriable_headers_;
-  std::vector<Http::RateLimitedResetHeaderParserSharedPtr> ratelimited_reset_headers_{};
-  std::chrono::milliseconds ratelimited_reset_max_interval_{};
+  std::vector<Http::ResetHeaderParserSharedPtr> reset_headers_{};
+  std::chrono::milliseconds reset_max_interval_{};
 };
 
 } // namespace Router

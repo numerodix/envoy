@@ -95,7 +95,7 @@ public:
   // A ResetHeaderData specifies one of exact value or regex or range element
   // to match in a request's header, specified in the header_match_type_ member.
   // It is the runtime equivalent of the HeaderMatchSpecifier proto in RDS API.
-  struct ResetHeaderData : public RateLimitedResetHeaderParser {
+  struct ResetHeaderData : public ResetHeaderParser {
     ResetHeaderData(
         const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config);
 
@@ -112,11 +112,11 @@ public:
   /**
    * Build a vector of RateLimitedResetHeaderParserSharedPtr given input config.
    */
-  static std::vector<Http::RateLimitedResetHeaderParserSharedPtr> buildResetHeaderParserVector(
+  static std::vector<Http::ResetHeaderParserSharedPtr> buildResetHeaderParserVector(
       const Protobuf::RepeatedPtrField<
           envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader>&
           reset_headers) {
-    std::vector<Http::RateLimitedResetHeaderParserSharedPtr> ret;
+    std::vector<Http::ResetHeaderParserSharedPtr> ret;
     for (const auto& reset_header : reset_headers) {
       ret.emplace_back(std::make_shared<HeaderUtility::ResetHeaderData>(reset_header));
     }

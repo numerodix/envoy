@@ -75,8 +75,8 @@ RetryStateImpl::RetryStateImpl(const RetryPolicy& route_policy,
       retry_priority_(route_policy.retryPriority()),
       retriable_status_codes_(route_policy.retriableStatusCodes()),
       retriable_headers_(route_policy.retriableHeaders()),
-      ratelimited_reset_headers_(route_policy.rateLimitedResetHeaders()),
-      ratelimited_reset_max_interval_(route_policy.rateLimitedResetMaxInterval()) {
+      reset_headers_(route_policy.resetHeaders()),
+      reset_max_interval_(route_policy.resetMaxInterval()) {
 
   std::chrono::milliseconds base_interval(
       runtime_.snapshot().getInteger("upstream.base_retry_backoff_ms", 25));
@@ -301,7 +301,7 @@ RetryStatus RetryStateImpl::shouldRetryHeaders(const Http::ResponseHeaderMap& re
 
   // Yes, we will retry based on the headers - try to parse a rate limited reset interval from the
   // response.
-  if (would_retry && !ratelimited_reset_headers_.empty()) {
+  if (would_retry && !reset_headers_.empty()) {
     const auto backoff_interval = parseRateLimitedResetInterval(response_headers);
     if (backoff_interval.has_value()) {
       ratelimited_backoff_strategy_ = std::make_unique<JitteredLowerBoundBackOffStrategy>(

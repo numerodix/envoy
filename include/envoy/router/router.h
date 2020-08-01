@@ -240,14 +240,13 @@ public:
    * @return std::vector<Http::HeaderMatcherSharedPt>& list of response header
    * matchers that will be attempted to extract a rate limited maximum retry interval.
    */
-  virtual const std::vector<Http::RateLimitedResetHeaderParserSharedPtr>&
-  rateLimitedResetHeaders() const PURE;
+  virtual const std::vector<Http::ResetHeaderParserSharedPtr>& resetHeaders() const PURE;
 
   /**
    * @return absl::optional<std::chrono::milliseconds> limit placed on a rate limited retry
    * interval.
    */
-  virtual std::chrono::milliseconds rateLimitedResetMaxInterval() const PURE;
+  virtual std::chrono::milliseconds resetMaxInterval() const PURE;
 };
 
 /**

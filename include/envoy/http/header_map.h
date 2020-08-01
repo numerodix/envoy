@@ -784,15 +784,15 @@ using HeaderMatcherSharedPtr = std::shared_ptr<HeaderMatcher>;
 /**
  * An interface to be implemented by rate limited reset header parsers.
  */
-class RateLimitedResetHeaderParser {
+class ResetHeaderParser {
 public:
-  virtual ~RateLimitedResetHeaderParser() = default;
+  virtual ~ResetHeaderParser() = default;
 
   virtual absl::optional<std::chrono::milliseconds>
   parseInterval(const HeaderMap& headers) const PURE;
 };
 
-using RateLimitedResetHeaderParserSharedPtr = std::shared_ptr<RateLimitedResetHeaderParser>;
+using ResetHeaderParserSharedPtr = std::shared_ptr<ResetHeaderParser>;
 
 } // namespace Http
 } // namespace Envoy
