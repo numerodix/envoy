@@ -230,9 +230,15 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
   return {ret, all_fields_valid};
 }
 
-absl::optional<std::chrono::milliseconds>
-RetryStateImpl::parseRateLimitedResetInterval(const Http::ResponseHeaderMap&) const {
-  time_source_.systemTime().time_since_epoch();
+absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetInterval(
+    const Http::ResponseHeaderMap& response_headers) const {
+  for (const auto& reset_header : reset_headers_) {
+    const auto interval = reset_header->parseInterval(time_source_, response_headers);
+    if (interval.has_value()) {
+      return interval;
+    }
+  }
+
   return absl::nullopt;
 }
 
