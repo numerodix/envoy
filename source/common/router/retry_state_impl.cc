@@ -234,7 +234,7 @@ absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetI
     const Http::ResponseHeaderMap& response_headers) const {
   for (const auto& reset_header : reset_headers_) {
     const auto interval = reset_header->parseInterval(time_source_, response_headers);
-    if (interval.has_value()) {
+    if (interval.has_value() && interval.value() <= reset_max_interval_) {
       return interval;
     }
   }

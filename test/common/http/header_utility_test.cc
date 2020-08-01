@@ -615,6 +615,21 @@ format: SECONDS
             reset_header_data.parseInterval(test_time_.timeSystem(), response_headers));
 }
 
+TEST_F(ResetHeaderDataParseIntervalTest, HeaderMatchesSupportedFormatSecondsCaseInsensitive) {
+  const std::string yaml = R"EOF(
+name: retry-after
+format: SECONDS
+  )EOF";
+
+  HeaderUtility::ResetHeaderData reset_header_data =
+      HeaderUtility::ResetHeaderData(parseResetHeaderParserFromYaml(yaml));
+
+  TestResponseHeaderMapImpl response_headers{{"Retry-After", "5"}};
+
+  EXPECT_EQ(absl::optional<std::chrono::milliseconds>(5000),
+            reset_header_data.parseInterval(test_time_.timeSystem(), response_headers));
+}
+
 TEST_F(ResetHeaderDataParseIntervalTest, HeaderMatchesButUnsupportedFormatTimestampFloat) {
   const std::string yaml = R"EOF(
 name: retry-after
