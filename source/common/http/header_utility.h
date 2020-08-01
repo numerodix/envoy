@@ -91,10 +91,9 @@ public:
 
   static bool matchHeaders(const HeaderMap& request_headers, const HeaderData& config_header);
 
-  // TODO update me
-  // A ResetHeaderData specifies one of exact value or regex or range element
-  // to match in a request's header, specified in the header_match_type_ member.
-  // It is the runtime equivalent of the HeaderMatchSpecifier proto in RDS API.
+  // A ResetHeaderData specifies a header name and a format to match against
+  // response headers that are used to signal a rate limit interval reset, such
+  // as Retry-After or X-RateLimit-Reset.
   struct ResetHeaderData : public ResetHeaderParser {
     ResetHeaderData(const envoy::config::route::v3::RetryPolicy::ResetHeader& config);
 
@@ -109,7 +108,7 @@ public:
   using ResetHeaderDataPtr = std::unique_ptr<ResetHeaderData>;
 
   /**
-   * Build a vector of RateLimitedResetHeaderParserSharedPtr given input config.
+   * Build a vector of ResetHeaderParserSharedPtr given input config.
    */
   static std::vector<Http::ResetHeaderParserSharedPtr> buildResetHeaderParserVector(
       const Protobuf::RepeatedPtrField<envoy::config::route::v3::RetryPolicy::ResetHeader>&

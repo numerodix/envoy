@@ -1043,7 +1043,6 @@ message RouteAction {
 message RetryPolicy {
   option (udpa.annotations.versioning).previous_message_type = "envoy.config.route.v3.RetryPolicy";
 
-  // TODO: Maybe add a doc string here
   enum ResetHeaderFormat {
     SECONDS = 0;
     UNIX_TIMESTAMP = 1;

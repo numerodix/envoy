@@ -789,6 +789,9 @@ class ResetHeaderParser {
 public:
   virtual ~ResetHeaderParser() = default;
 
+  /**
+   * Iterate over the headers, choose the first one that matches by name, and try to parse its value.
+   */
   virtual absl::optional<std::chrono::milliseconds>
   parseInterval(TimeSource& time_source, const HeaderMap& headers) const PURE;
 };
