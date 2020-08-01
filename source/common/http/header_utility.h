@@ -20,6 +20,7 @@ namespace Http {
 class HeaderUtility {
 public:
   enum class HeaderMatchType { Value, Regex, Range, Present, Prefix, Suffix };
+  enum class ResetHeaderFormat { Seconds, UnixTimestamp };
 
   /**
    * Get all instances of the header key specified, and return the values in the vector provided.
@@ -90,6 +91,38 @@ public:
 
   static bool matchHeaders(const HeaderMap& request_headers, const HeaderData& config_header);
 
+  // TODO update me
+  // A ResetHeaderData specifies one of exact value or regex or range element
+  // to match in a request's header, specified in the header_match_type_ member.
+  // It is the runtime equivalent of the HeaderMatchSpecifier proto in RDS API.
+  struct ResetHeaderData : public RateLimitedResetHeaderParser {
+    ResetHeaderData(
+        const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config);
+
+    const LowerCaseString name_;
+    ResetHeaderFormat format_;
+
+    // RateLimitedResetHeaderParser
+    virtual absl::optional<std::chrono::milliseconds>
+    parseInterval(const HeaderMap& headers) const override;
+  };
+
+  using ResetHeaderDataPtr = std::unique_ptr<ResetHeaderData>;
+
+  /**
+   * Build a vector of RateLimitedResetHeaderParserSharedPtr given input config.
+   */
+  static std::vector<Http::RateLimitedResetHeaderParserSharedPtr> buildResetHeaderParserVector(
+      const Protobuf::RepeatedPtrField<
+          envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader>&
+          reset_headers) {
+    std::vector<Http::RateLimitedResetHeaderParserSharedPtr> ret;
+    for (const auto& reset_header : reset_headers) {
+      ret.emplace_back(std::make_shared<HeaderUtility::ResetHeaderData>(reset_header));
+    }
+    return ret;
+  }
+
   /**
    * Validates that a header value is valid, according to RFC 7230, section 3.2.
    * http://tools.ietf.org/html/rfc7230#section-3.2
@@ -157,39 +190,6 @@ public:
    * @brief Remove the port part from host/authority header if it is equal to provided port
    */
   static void stripPortFromHost(RequestHeaderMap& headers, uint32_t listener_port);
-};
-
-class RateLimitedResetHeaderUtility {
-public:
-  enum class Format { Seconds, UnixTimestamp };
-
-  struct HeaderData : public RateLimitedResetHeaderParser {
-    HeaderData(
-        const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config);
-
-    const LowerCaseString name_;
-    Format format_;
-
-    // RateLimitedResetHeaderParser
-    virtual absl::optional<std::chrono::milliseconds>
-    parseInterval(const HeaderMap& headers) const override;
-  };
-
-  using HeaderDataPtr = std::unique_ptr<HeaderData>;
-
-  /**
-   * Build a vector of RateLimitedResetHeaderParserSharedPtr given input config.
-   */
-  static std::vector<Http::RateLimitedResetHeaderParserSharedPtr> buildHeaderParserVector(
-      const Protobuf::RepeatedPtrField<
-          envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader>&
-          reset_headers) {
-    std::vector<Http::RateLimitedResetHeaderParserSharedPtr> ret;
-    for (const auto& reset_header : reset_headers) {
-      ret.emplace_back(std::make_shared<RateLimitedResetHeaderUtility::HeaderData>(reset_header));
-    }
-    return ret;
-  }
 };
 
 } // namespace Http
