@@ -165,5 +165,41 @@ public:
    */
   static void stripPortFromHost(RequestHeaderMap& headers, uint32_t listener_port);
 };
+
+class RateLimitedResetHeaderUtility {
+public:
+  enum class Format { Seconds, UnixTimestamp };
+
+  struct HeaderData : public RateLimitedResetHeaderParser {
+    HeaderData(
+        const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config);
+
+    const LowerCaseString name_;
+    Format format_;
+
+    // RateLimitedResetHeaderParser
+    virtual absl::optional<std::chrono::milliseconds>
+    parseInterval(const HeaderMap&) const override {
+      return absl::nullopt;
+    }
+  };
+
+  using HeaderDataPtr = std::unique_ptr<HeaderData>;
+
+  /**
+   * Build a vector of RateLimitedResetHeaderParserSharedPtr given input config.
+   */
+  static std::vector<Http::RateLimitedResetHeaderParserSharedPtr> buildHeaderParserVector(
+      const Protobuf::RepeatedPtrField<
+          envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader>&
+          reset_headers) {
+    std::vector<Http::RateLimitedResetHeaderParserSharedPtr> ret;
+    for (const auto& reset_header : reset_headers) {
+      ret.emplace_back(std::make_shared<RateLimitedResetHeaderUtility::HeaderData>(reset_header));
+    }
+    return ret;
+  }
+};
+
 } // namespace Http
 } // namespace Envoy

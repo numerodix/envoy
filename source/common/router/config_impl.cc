@@ -122,11 +122,11 @@ RetryPolicyImpl::RetryPolicyImpl(const envoy::config::route::v3::RetryPolicy& re
   }
 
   if (retry_policy.has_rate_limited_retry_back_off()) {
-    ratelimited_reset_headers_ = Http::HeaderUtility::buildHeaderMatcherVector(
-        retry_policy.rate_limited_retry_back_off().reset_headers());
+    // ratelimited_reset_headers_ = Http::HeaderUtility::buildHeaderMatcherVector(
+    //     retry_policy.rate_limited_retry_back_off().reset_headers());
 
     absl::optional<std::chrono::milliseconds> ratelimited_reset_max_interval =
-        PROTOBUF_GET_OPTIONAL_MS(retry_policy.rate_limited_retry_back_off(), reset_max_interval);
+        PROTOBUF_GET_OPTIONAL_MS(retry_policy.rate_limited_retry_back_off(), max_interval);
     if (ratelimited_reset_max_interval.has_value()) {
       std::chrono::milliseconds max_interval = ratelimited_reset_max_interval.value();
       if (max_interval.count() < 1) {

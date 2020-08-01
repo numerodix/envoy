@@ -791,5 +791,18 @@ public:
 
 using HeaderMatcherSharedPtr = std::shared_ptr<HeaderMatcher>;
 
+/**
+ * An interface to be implemented by rate limited reset header parsers.
+ */
+class RateLimitedResetHeaderParser {
+public:
+  virtual ~RateLimitedResetHeaderParser() = default;
+
+  virtual absl::optional<std::chrono::milliseconds>
+  parseInterval(const HeaderMap& headers) const PURE;
+};
+
+using RateLimitedResetHeaderParserSharedPtr = std::shared_ptr<RateLimitedResetHeaderParser>;
+
 } // namespace Http
 } // namespace Envoy
