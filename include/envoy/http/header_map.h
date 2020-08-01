@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "envoy/common/pure.h"
+#include "envoy/common/time.h"
 
 #include "common/common/assert.h"
 #include "common/common/hash.h"
@@ -789,7 +790,7 @@ public:
   virtual ~ResetHeaderParser() = default;
 
   virtual absl::optional<std::chrono::milliseconds>
-  parseInterval(const HeaderMap& headers) const PURE;
+  parseInterval(TimeSource& time_source, const HeaderMap& headers) const PURE;
 };
 
 using ResetHeaderParserSharedPtr = std::shared_ptr<ResetHeaderParser>;

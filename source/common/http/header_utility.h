@@ -104,7 +104,7 @@ public:
 
     // RateLimitedResetHeaderParser
     virtual absl::optional<std::chrono::milliseconds>
-    parseInterval(const HeaderMap& headers) const override;
+    parseInterval(TimeSource& time_source, const HeaderMap& headers) const override;
   };
 
   using ResetHeaderDataPtr = std::unique_ptr<ResetHeaderData>;

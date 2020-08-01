@@ -269,7 +269,8 @@ HeaderUtility::ResetHeaderData::ResetHeaderData(
 }
 
 absl::optional<std::chrono::milliseconds>
-HeaderUtility::ResetHeaderData::parseInterval(const HeaderMap& headers) const {
+HeaderUtility::ResetHeaderData::parseInterval(TimeSource& time_source,
+                                              const HeaderMap& headers) const {
   const HeaderEntry* header = headers.get(name_);
 
   if (header == nullptr) {
@@ -287,8 +288,21 @@ HeaderUtility::ResetHeaderData::parseInterval(const HeaderMap& headers) const {
     break;
 
   case HeaderUtility::ResetHeaderFormat::UnixTimestamp:
-    break;
+    if (absl::SimpleAtoi(header_value, &num_seconds)) {
+      const auto time_now = time_source.systemTime().time_since_epoch();
+      const uint64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(time_now).count();
+
+      if (num_seconds < timestamp) {
+        return absl::nullopt;
+      }
+
+      const uint64_t interval = num_seconds - timestamp;
+      return absl::optional<std::chrono::milliseconds>(interval * 1000UL);
+    }
   }
+
+  // TODO: gcov not reached?
+  // NOT_IMPLEMENTED_GCOVR_EXCL_LINE;
 
   return absl::nullopt;
 }
