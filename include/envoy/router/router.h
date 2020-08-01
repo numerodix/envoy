@@ -237,14 +237,14 @@ public:
   virtual absl::optional<std::chrono::milliseconds> maxInterval() const PURE;
 
   /**
-   * @return std::vector<Http::HeaderMatcherSharedPt>& list of response header
-   * matchers that will be attempted to extract a rate limited maximum retry interval.
+   * @return std::vector<Http::ResetHeaderParserSharedPtr>& list of reset header
+   * parsers that will be used to extract a retry back-off interval from response headers.
    */
   virtual const std::vector<Http::ResetHeaderParserSharedPtr>& resetHeaders() const PURE;
 
   /**
-   * @return absl::optional<std::chrono::milliseconds> limit placed on a rate limited retry
-   * interval.
+   * @return absl::optional<std::chrono::milliseconds> upper limit placed on a retry
+   * back-off interval parsed from response headers.
    */
   virtual std::chrono::milliseconds resetMaxInterval() const PURE;
 };
@@ -312,7 +312,7 @@ public:
    * @return the interval if parsing was successful.
    */
   virtual absl::optional<std::chrono::milliseconds>
-  parseRateLimitedResetInterval(const Http::ResponseHeaderMap& response_headers) const PURE;
+  parseResetInterval(const Http::ResponseHeaderMap& response_headers) const PURE;
 
   /**
    * Determine whether a request should be retried based on the response headers.

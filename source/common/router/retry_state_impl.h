@@ -54,7 +54,7 @@ public:
   // Router::RetryState
   bool enabled() override { return retry_on_ != 0; }
   absl::optional<std::chrono::milliseconds>
-  parseRateLimitedResetInterval(const Http::ResponseHeaderMap& response_headers) const override;
+  parseResetInterval(const Http::ResponseHeaderMap& response_headers) const override;
   RetryStatus shouldRetryHeaders(const Http::ResponseHeaderMap& response_headers,
                                  DoRetryCallback callback) override;
   // Returns true if the retry policy would retry the passed headers. Does not

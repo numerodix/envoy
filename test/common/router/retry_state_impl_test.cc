@@ -950,7 +950,7 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitedResetInterval) {
     EXPECT_TRUE(state_->enabled());
 
     Http::TestResponseHeaderMapImpl response_headers{{":status", "429"}, {"Retry-After", "301"}};
-    EXPECT_EQ(absl::nullopt, state_->parseRateLimitedResetInterval(response_headers));
+    EXPECT_EQ(absl::nullopt, state_->parseResetInterval(response_headers));
   }
 
   // Failure case: Matches reset header (timestamp) but exceeds max_interval (>5min)
@@ -961,7 +961,7 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitedResetInterval) {
 
     Http::TestResponseHeaderMapImpl response_headers{{":status", "429"},
                                                      {"X-RateLimit-Reset", "1000000301"}};
-    EXPECT_EQ(absl::nullopt, state_->parseRateLimitedResetInterval(response_headers));
+    EXPECT_EQ(absl::nullopt, state_->parseResetInterval(response_headers));
   }
 
   // The only reset header matches (seconds) and the header value is in within range
@@ -972,7 +972,7 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitedResetInterval) {
 
     Http::TestResponseHeaderMapImpl response_headers{{":status", "429"}, {"Retry-After", "300"}};
     EXPECT_EQ(absl::optional<std::chrono::milliseconds>(300000),
-              state_->parseRateLimitedResetInterval(response_headers));
+              state_->parseResetInterval(response_headers));
   }
 
   // The only reset header matches (timestamp) and the header value is in within range
@@ -984,7 +984,7 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitedResetInterval) {
     Http::TestResponseHeaderMapImpl response_headers{{":status", "429"},
                                                      {"x-ratelimit-reset", "1000000300"}};
     EXPECT_EQ(absl::optional<std::chrono::milliseconds>(300000),
-              state_->parseRateLimitedResetInterval(response_headers));
+              state_->parseResetInterval(response_headers));
   }
 
   // The second (timestamp) and third (seconds) reset headers match but Retry-After comes first in
@@ -997,7 +997,7 @@ TEST_F(RouterRetryStateImplTest, ParseRateLimitedResetInterval) {
     Http::TestResponseHeaderMapImpl response_headers{
         {":status", "429"}, {"x-ratelimit-reset", "1000000002"}, {"retry-after", "3"}};
     EXPECT_EQ(absl::optional<std::chrono::milliseconds>(3000),
-              state_->parseRateLimitedResetInterval(response_headers));
+              state_->parseResetInterval(response_headers));
   }
 }
 

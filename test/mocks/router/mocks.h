@@ -163,7 +163,7 @@ public:
   void expectResetRetry();
 
   MOCK_METHOD(bool, enabled, ());
-  MOCK_METHOD(absl::optional<std::chrono::milliseconds>, parseRateLimitedResetInterval,
+  MOCK_METHOD(absl::optional<std::chrono::milliseconds>, parseResetInterval,
               (const Http::ResponseHeaderMap& response_headers), (const));
   MOCK_METHOD(RetryStatus, shouldRetryHeaders,
               (const Http::ResponseHeaderMap& response_headers, DoRetryCallback callback));

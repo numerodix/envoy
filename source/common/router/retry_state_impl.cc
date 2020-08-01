@@ -230,8 +230,8 @@ std::pair<uint32_t, bool> RetryStateImpl::parseRetryGrpcOn(absl::string_view ret
   return {ret, all_fields_valid};
 }
 
-absl::optional<std::chrono::milliseconds> RetryStateImpl::parseRateLimitedResetInterval(
-    const Http::ResponseHeaderMap& response_headers) const {
+absl::optional<std::chrono::milliseconds>
+RetryStateImpl::parseResetInterval(const Http::ResponseHeaderMap& response_headers) const {
   for (const auto& reset_header : reset_headers_) {
     const auto interval = reset_header->parseInterval(time_source_, response_headers);
     if (interval.has_value() && interval.value() <= reset_max_interval_) {
@@ -308,7 +308,7 @@ RetryStatus RetryStateImpl::shouldRetryHeaders(const Http::ResponseHeaderMap& re
   // Yes, we will retry based on the headers - try to parse a rate limited reset interval from the
   // response.
   if (would_retry && !reset_headers_.empty()) {
-    const auto backoff_interval = parseRateLimitedResetInterval(response_headers);
+    const auto backoff_interval = parseResetInterval(response_headers);
     if (backoff_interval.has_value()) {
       ratelimited_backoff_strategy_ = std::make_unique<JitteredLowerBoundBackOffStrategy>(
           backoff_interval.value().count(), random_);
