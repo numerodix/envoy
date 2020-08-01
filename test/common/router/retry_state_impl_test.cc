@@ -1067,9 +1067,7 @@ TEST_F(RouterRetryStateImplTest, CustomBackOffIntervalDefaultMax) {
 // }
 
 TEST_F(RouterRetryStateImplTest, RateLimitedRetryBackoffStrategy) {
-  Protobuf::RepeatedPtrField<
-      envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader>
-      reset_headers;
+  Protobuf::RepeatedPtrField<envoy::config::route::v3::RetryPolicy::ResetHeader> reset_headers;
   auto* reset_header = reset_headers.Add();
   reset_header->set_name("Retry-After");
   reset_header->set_format(envoy::config::route::v3::RetryPolicy::SECONDS);

@@ -1099,6 +1099,16 @@ message RetryPolicy {
     google.protobuf.Duration max_interval = 2 [(validate.rules).duration = {gt {}}];
   }
 
+  message ResetHeader {
+    option (udpa.annotations.versioning).previous_message_type =
+        "envoy.config.route.v3.RetryPolicy.ResetHeader";
+
+    string name = 1
+        [(validate.rules).string = {min_bytes: 1 well_known_regex: HTTP_HEADER_NAME strict: false}];
+
+    ResetHeaderFormat format = 2 [(validate.rules).enum = {defined_only: true}];
+  }
+
   // A retry back-off strategy that applies when the upstream server rate limits
   // the request.
   //
@@ -1145,17 +1155,6 @@ message RetryPolicy {
   message RateLimitedRetryBackOff {
     option (udpa.annotations.versioning).previous_message_type =
         "envoy.config.route.v3.RetryPolicy.RateLimitedRetryBackOff";
-
-    message ResetHeader {
-      option (udpa.annotations.versioning).previous_message_type =
-          "envoy.config.route.v3.RetryPolicy.RateLimitedRetryBackOff.ResetHeader";
-
-      string name = 1 [
-        (validate.rules).string = {min_bytes: 1 well_known_regex: HTTP_HEADER_NAME strict: false}
-      ];
-
-      ResetHeaderFormat format = 2 [(validate.rules).enum = {defined_only: true}];
-    }
 
     // Specifies the reset headers (like ``Retry-After`` or ``X-RateLimit-Reset``)
     // to match against the response. Headers are tried in order, and matched case

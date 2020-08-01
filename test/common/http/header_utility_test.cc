@@ -500,9 +500,9 @@ invert_match: true
   EXPECT_FALSE(HeaderUtility::matchHeaders(unmatching_headers, header_data));
 }
 
-envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader
+envoy::config::route::v3::RetryPolicy::ResetHeader
 parseResetHeaderParserFromYaml(const std::string& yaml) {
-  envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader reset_header;
+  envoy::config::route::v3::RetryPolicy::ResetHeader reset_header;
   TestUtility::loadFromYaml(yaml, reset_header);
   return reset_header;
 }

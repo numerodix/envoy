@@ -96,8 +96,7 @@ public:
   // to match in a request's header, specified in the header_match_type_ member.
   // It is the runtime equivalent of the HeaderMatchSpecifier proto in RDS API.
   struct ResetHeaderData : public ResetHeaderParser {
-    ResetHeaderData(
-        const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config);
+    ResetHeaderData(const envoy::config::route::v3::RetryPolicy::ResetHeader& config);
 
     const LowerCaseString name_;
     ResetHeaderFormat format_;
@@ -113,8 +112,7 @@ public:
    * Build a vector of RateLimitedResetHeaderParserSharedPtr given input config.
    */
   static std::vector<Http::ResetHeaderParserSharedPtr> buildResetHeaderParserVector(
-      const Protobuf::RepeatedPtrField<
-          envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader>&
+      const Protobuf::RepeatedPtrField<envoy::config::route::v3::RetryPolicy::ResetHeader>&
           reset_headers) {
     std::vector<Http::ResetHeaderParserSharedPtr> ret;
     for (const auto& reset_header : reset_headers) {

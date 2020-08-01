@@ -140,7 +140,7 @@ bool HeaderUtility::matchHeaders(const HeaderMap& request_headers, const HeaderD
 }
 
 HeaderUtility::ResetHeaderData::ResetHeaderData(
-    const envoy::config::route::v3::RetryPolicy::RateLimitedRetryBackOff::ResetHeader& config)
+    const envoy::config::route::v3::RetryPolicy::ResetHeader& config)
     : name_(config.name()) {
   switch (config.format()) {
   case envoy::config::route::v3::RetryPolicy::SECONDS:
@@ -171,6 +171,7 @@ HeaderUtility::ResetHeaderData::parseInterval(TimeSource& time_source,
     if (absl::SimpleAtoi(header_value, &num_seconds)) {
       return absl::optional<std::chrono::milliseconds>(num_seconds * 1000UL);
     }
+    break;
 
   case HeaderUtility::ResetHeaderFormat::UnixTimestamp:
     if (absl::SimpleAtoi(header_value, &num_seconds)) {
@@ -184,6 +185,7 @@ HeaderUtility::ResetHeaderData::parseInterval(TimeSource& time_source,
       const uint64_t interval = num_seconds - timestamp;
       return absl::optional<std::chrono::milliseconds>(interval * 1000UL);
     }
+    break;
 
   default:
     NOT_REACHED_GCOVR_EXCL_LINE;
