@@ -286,7 +286,7 @@ TEST_P(ClusterMemoryTestRunner, MemoryLargeClusterSizeWithFakeSymbolTable) {
   // 2020/07/20  11559    44747       46000   stats: add histograms for request/response headers
   //                                          and body sizes.
   // 2020/07/21  12034    44811       46000   Add configurable histogram buckets.
-  // 2020/08/01  12202    46027       46100   router: add new retry back-off strategy
+  // 2020/08/01  12202    46435       46500   router: add new retry back-off strategy
 
   // Note: when adjusting this value: EXPECT_MEMORY_EQ is active only in CI
   // 'release' builds, where we control the platform and tool-chain. So you
@@ -305,9 +305,9 @@ TEST_P(ClusterMemoryTestRunner, MemoryLargeClusterSizeWithFakeSymbolTable) {
   // different number of bytes. We still run the approximate test.
   if (ip_version_ != Network::Address::IpVersion::v6) {
     // https://github.com/envoyproxy/envoy/issues/12209
-    // EXPECT_MEMORY_EQ(m_per_cluster, 46027);
+    // EXPECT_MEMORY_EQ(m_per_cluster, 46435);
   }
-  EXPECT_MEMORY_LE(m_per_cluster, 46100); // Round up to allow platform variations.
+  EXPECT_MEMORY_LE(m_per_cluster, 46500); // Round up to allow platform variations.
 }
 
 TEST_P(ClusterMemoryTestRunner, MemoryLargeClusterSizeWithRealSymbolTable) {
@@ -363,6 +363,7 @@ TEST_P(ClusterMemoryTestRunner, MemoryLargeClusterSizeWithRealSymbolTable) {
   // 2020/07/20  11559    36859       38000   stats: add histograms for request/response headers
   //                                          and body sizes.
   // 2020/07/21  12034    36923       38000   Add configurable histogram buckets.
+  // 2020/08/01  12202    38323       38500   router: add new retry back-off strategy
 
   // Note: when adjusting this value: EXPECT_MEMORY_EQ is active only in CI
   // 'release' builds, where we control the platform and tool-chain. So you
@@ -381,9 +382,9 @@ TEST_P(ClusterMemoryTestRunner, MemoryLargeClusterSizeWithRealSymbolTable) {
   // different number of bytes. We still run the approximate test.
   if (ip_version_ != Network::Address::IpVersion::v6) {
     // https://github.com/envoyproxy/envoy/issues/12209
-    // EXPECT_MEMORY_EQ(m_per_cluster, 36923);
+    // EXPECT_MEMORY_EQ(m_per_cluster, 38323);
   }
-  EXPECT_MEMORY_LE(m_per_cluster, 38000); // Round up to allow platform variations.
+  EXPECT_MEMORY_LE(m_per_cluster, 38500); // Round up to allow platform variations.
 }
 
 TEST_P(ClusterMemoryTestRunner, MemoryLargeHostSizeWithStats) {
