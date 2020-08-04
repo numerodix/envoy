@@ -379,6 +379,19 @@ envoy_cc_library(
 )
 
 envoy_cc_library(
+    name = "reset_header_parser_lib",
+    srcs = ["reset_header_parser.cc"],
+    hdrs = ["reset_header_parser.h"],
+    deps = [
+        "//include/envoy/common:time_interface",
+        "//include/envoy/http:header_map_interface",
+        "//source/common/http:headers_lib",
+        "//source/common/protobuf:utility_lib",
+        "@envoy_api//envoy/config/core/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_library(
     name = "string_accessor_lib",
     hdrs = ["string_accessor_impl.h"],
     deps = [

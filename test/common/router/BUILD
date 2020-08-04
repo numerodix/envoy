@@ -62,6 +62,18 @@ envoy_cc_fuzz_test(
 )
 
 envoy_cc_test(
+    name = "reset_header_parser_test",
+    srcs = ["reset_header_parser_test.cc"],
+    deps = [
+        "//source/common/http:header_utility_lib",
+        "//source/common/router:reset_header_parser_lib",
+        "//test/test_common:simulated_time_system_lib",
+        "//test/test_common:utility_lib",
+        "@envoy_api//envoy/config/route/v3:pkg_cc_proto",
+    ],
+)
+
+envoy_cc_test(
     name = "rds_impl_test",
     srcs = ["rds_impl_test.cc"],
     deps = [
