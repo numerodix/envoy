@@ -20,8 +20,8 @@ using ResetHeaderParserSharedPtr = std::shared_ptr<ResetHeaderParser>;
 
 enum class ResetHeaderFormat { Seconds, UnixTimestamp };
 
-/**
- * ResetHeaderParser specifies a header name and a format to match against
+/*
+ * A ResetHeaderParser specifies a header name and a format to match against
  * response headers that are used to signal a rate limit interval reset, such
  * as Retry-After or X-RateLimit-Reset.
  */
@@ -42,12 +42,15 @@ public:
 
   ResetHeaderParser(const envoy::config::route::v3::RetryPolicy::ResetHeader& config);
 
+  const Http::LowerCaseString& name() const { return name_; }
+  ResetHeaderFormat format() const { return format_; }
+
   /**
    * Iterate over the headers, choose the first one that matches by name, and try to parse its
    * value.
    */
-  absl::optional<std::chrono::milliseconds>
-  parseInterval(TimeSource& time_source, const Http::HeaderMap& headers) const;
+  absl::optional<std::chrono::milliseconds> parseInterval(TimeSource& time_source,
+                                                          const Http::HeaderMap& headers) const;
 
 private:
   const Http::LowerCaseString name_;

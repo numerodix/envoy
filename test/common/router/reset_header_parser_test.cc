@@ -28,8 +28,8 @@ name: retry-after
 
   ResetHeaderParser reset_header_parser = ResetHeaderParser(parseResetHeaderParserFromYaml(yaml));
 
-  EXPECT_EQ("retry-after", reset_header_parser.name_.get());
-  EXPECT_EQ(ResetHeaderFormat::Seconds, reset_header_parser.format_);
+  EXPECT_EQ("retry-after", reset_header_parser.name().get());
+  EXPECT_EQ(ResetHeaderFormat::Seconds, reset_header_parser.format());
 }
 
 TEST(ResetHeaderParserConstructorTest, FormatSeconds) {
@@ -40,8 +40,8 @@ format: SECONDS
 
   ResetHeaderParser reset_header_parser = ResetHeaderParser(parseResetHeaderParserFromYaml(yaml));
 
-  EXPECT_EQ("retry-after", reset_header_parser.name_.get());
-  EXPECT_EQ(ResetHeaderFormat::Seconds, reset_header_parser.format_);
+  EXPECT_EQ("retry-after", reset_header_parser.name().get());
+  EXPECT_EQ(ResetHeaderFormat::Seconds, reset_header_parser.format());
 }
 
 TEST(ResetHeaderParserConstructorTest, FormatUnixTimestamp) {
@@ -52,8 +52,8 @@ format: UNIX_TIMESTAMP
 
   ResetHeaderParser reset_header_parser = ResetHeaderParser(parseResetHeaderParserFromYaml(yaml));
 
-  EXPECT_EQ("retry-after", reset_header_parser.name_.get());
-  EXPECT_EQ(ResetHeaderFormat::UnixTimestamp, reset_header_parser.format_);
+  EXPECT_EQ("retry-after", reset_header_parser.name().get());
+  EXPECT_EQ(ResetHeaderFormat::UnixTimestamp, reset_header_parser.format());
 }
 
 class ResetHeaderParserParseIntervalTest : public testing::Test {
@@ -88,7 +88,8 @@ format: SECONDS
 
   ResetHeaderParser reset_header_parser = ResetHeaderParser(parseResetHeaderParserFromYaml(yaml));
 
-  Http::TestResponseHeaderMapImpl response_headers{{"retry-after", "Fri, 17 Jul 2020 11:59:51 GMT"}};
+  Http::TestResponseHeaderMapImpl response_headers{
+      {"retry-after", "Fri, 17 Jul 2020 11:59:51 GMT"}};
 
   EXPECT_EQ(absl::nullopt,
             reset_header_parser.parseInterval(test_time_.timeSystem(), response_headers));
