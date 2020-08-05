@@ -162,7 +162,7 @@ public:
    * value.
    */
   virtual absl::optional<std::chrono::milliseconds>
-  parseInterval(TimeSource& time_source, const HeaderMap& headers) const PURE;
+  parseInterval(TimeSource& time_source, const Http::HeaderMap& headers) const PURE;
 };
 
 using ResetHeaderParserSharedPtr = std::shared_ptr<ResetHeaderParser>;
@@ -257,7 +257,7 @@ public:
    * @return std::vector<Http::ResetHeaderParserSharedPtr>& list of reset header
    * parsers that will be used to extract a retry back-off interval from response headers.
    */
-  virtual const std::vector<Http::ResetHeaderParserSharedPtr>& resetHeaders() const PURE;
+  virtual const std::vector<ResetHeaderParserSharedPtr>& resetHeaders() const PURE;
 
   /**
    * @return std::chrono::milliseconds upper limit placed on a retry

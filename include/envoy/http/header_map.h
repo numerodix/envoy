@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "envoy/common/pure.h"
-#include "envoy/common/time.h"
 
 #include "common/common/assert.h"
 #include "common/common/hash.h"
