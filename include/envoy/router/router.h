@@ -406,7 +406,6 @@ public:
       const Upstream::PrioritySet& priority_set,
       const Upstream::HealthyAndDegradedLoad& original_priority_load,
       const Upstream::RetryPriority::PriorityMappingFunc& priority_mapping_func) PURE;
-
   /**
    * return how many times host selection should be reattempted during host selection.
    */
