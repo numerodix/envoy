@@ -151,6 +151,23 @@ public:
 };
 
 /**
+ * An interface to be implemented by rate limited reset header parsers.
+ */
+class ResetHeaderParser {
+public:
+  virtual ~ResetHeaderParser() = default;
+
+  /**
+   * Iterate over the headers, choose the first one that matches by name, and try to parse its
+   * value.
+   */
+  virtual absl::optional<std::chrono::milliseconds>
+  parseInterval(TimeSource& time_source, const HeaderMap& headers) const PURE;
+};
+
+using ResetHeaderParserSharedPtr = std::shared_ptr<ResetHeaderParser>;
+
+/**
  * Route level retry policy.
  */
 class RetryPolicy {
@@ -243,7 +260,7 @@ public:
   virtual const std::vector<Http::ResetHeaderParserSharedPtr>& resetHeaders() const PURE;
 
   /**
-   * @return absl::optional<std::chrono::milliseconds> upper limit placed on a retry
+   * @return std::chrono::milliseconds upper limit placed on a retry
    * back-off interval parsed from response headers.
    */
   virtual std::chrono::milliseconds resetMaxInterval() const PURE;
