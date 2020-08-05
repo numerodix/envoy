@@ -167,6 +167,7 @@ envoy_cc_test(
     srcs = ["retry_state_impl_test.cc"],
     deps = [
         "//source/common/http:header_map_lib",
+        "//source/common/router:reset_header_parser_lib",
         "//source/common/router:retry_state_lib",
         "//source/common/upstream:resource_manager_lib",
         "//test/mocks/router:router_mocks",
