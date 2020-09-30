@@ -178,7 +178,10 @@ public:
       : context_extensions_(config.has_check_settings()
                                 ? config.check_settings().context_extensions()
                                 : ContextExtensionsMap()),
-        disabled_(config.disabled()) {}
+        disabled_(config.disabled()),
+        allow_partial_message_(config.with_request_body().allow_partial_message()),
+        max_request_bytes_(config.with_request_body().max_request_bytes()),
+        pack_as_bytes_(config.with_request_body().pack_as_bytes()) {}
 
   void merge(const FilterConfigPerRoute& other);
 
@@ -196,6 +199,9 @@ private:
   // move it to the CheckRequest, thus avoiding a copy that would incur by converting it.
   ContextExtensionsMap context_extensions_;
   bool disabled_;
+  bool allow_partial_message_;
+  uint32_t max_request_bytes_;
+  bool pack_as_bytes_;
 };
 
 /**

@@ -247,6 +247,9 @@ message ExtAuthzPerRoute {
 
     // Check request settings for this route.
     CheckSettings check_settings = 2 [(validate.rules).message = {required: true}];
+
+    // Buffer settings for this route.
+    BufferSettings with_request_body = 3;
   }
 }
 

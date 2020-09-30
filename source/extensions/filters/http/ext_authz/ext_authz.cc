@@ -24,6 +24,9 @@ using RcDetails = ConstSingleton<RcDetailsValues>;
 
 void FilterConfigPerRoute::merge(const FilterConfigPerRoute& other) {
   disabled_ = other.disabled_;
+  allow_partial_message_ = other.allow_partial_message_;
+  max_request_bytes_ = other.max_request_bytes_;
+  pack_as_bytes_ = other.pack_as_bytes_;
   auto begin_it = other.context_extensions_.begin();
   auto end_it = other.context_extensions_.end();
   for (auto it = begin_it; it != end_it; ++it) {
