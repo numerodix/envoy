@@ -81,5 +81,52 @@ absl::string_view PathUtil::removeQueryAndFragment(const absl::string_view path)
   return ret;
 }
 
+std::string PathUtil::decodeAsciiPrintableChars(const absl::string_view path) {
+  const auto try_parse_hex_char = [](const char ch) -> int {
+    if (('0' <= ch) && (ch <= '9')) {
+      return ch - '0';
+    } else if (('A' <= ch) && (ch <= 'F')) {
+      return 10 + (ch - 'A');
+    } else if (('a' <= ch) && (ch <= 'f')) {
+      return 10 + (ch - 'a');
+    }
+    return -1;
+  };
+
+  const auto try_parse_encoded_byteval = [&](std::size_t pos) -> char {
+    const char fst = path[pos + 1];
+    const char snd = path[pos + 2];
+
+    int fst_char = try_parse_hex_char(fst);
+    int snd_char = try_parse_hex_char(snd);
+
+    if ((fst_char != -1) && (snd_char != -1)) {
+      return (fst_char << 4) | snd_char;
+    }
+
+    return 0;
+  };
+
+  std::string result(path.size(), 0);
+  std::size_t cursor = 0;
+
+  for (std::size_t i = 0; i < path.length(); ++i) {
+    if (path[i] == '%' && i + 2 < path.length()) {
+      int ch = try_parse_encoded_byteval(i);
+      if ((0x1f < ch) && (ch < 0x7f) && (ch != '/')) {
+        result[cursor++] = ch;
+        i += 2;
+      } else {
+        result[cursor++] = path[i];
+      }
+    } else {
+      result[cursor++] = path[i];
+    }
+  }
+
+  result.resize(cursor);
+  return result;
+}
+
 } // namespace Http
 } // namespace Envoy

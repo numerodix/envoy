@@ -22,6 +22,8 @@ public:
   // Removes the query and/or fragment string (if present) from the input path.
   // For example, this function returns "/data" for the input path "/data?param=value#fragment".
   static absl::string_view removeQueryAndFragment(const absl::string_view path);
+
+  static std::string decodeAsciiPrintableChars(const absl::string_view path);
 };
 
 } // namespace Http

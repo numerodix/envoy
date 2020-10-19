@@ -1045,7 +1045,14 @@ RouteConstSharedPtr RegexRouteEntryImpl::matches(const Http::RequestHeaderMap& h
                                                  const StreamInfo::StreamInfo& stream_info,
                                                  uint64_t random_value) const {
   if (RouteEntryImplBase::matchRoute(headers, stream_info, random_value)) {
-    const absl::string_view path = Http::PathUtil::removeQueryAndFragment(headers.getPathValue());
+    absl::string_view path = Http::PathUtil::removeQueryAndFragment(headers.getPathValue());
+    std::string decoded_path = Http::PathUtil::decodeAsciiPrintableChars(path);
+    printf("matching original path: %s\n", std::string(path).c_str());
+
+    absl::string_view temp_view(decoded_path.c_str());
+    path.swap(temp_view);
+    printf("matching decoded path: %s\n", std::string(path).c_str());
+
     if (regex_->match(path)) {
       return clusterEntry(headers, random_value);
     }
