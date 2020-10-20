@@ -1029,6 +1029,7 @@ RegexRouteEntryImpl::RegexRouteEntryImpl(
            envoy::config::route::v3::RouteMatch::PathSpecifierCase::kSafeRegex);
     regex_ = Regex::Utility::parseRegex(route.match().safe_regex());
     regex_str_ = route.match().safe_regex().regex();
+    percent_decode_input_ = route.match().safe_regex().percent_decode_input();
   }
 }
 
@@ -1050,17 +1051,19 @@ RouteConstSharedPtr RegexRouteEntryImpl::matches(const Http::RequestHeaderMap& h
     absl::string_view path = Http::PathUtil::removeQueryAndFragment(headers.getPathValue());
     printf("matching original path: %s\n", std::string(path).c_str());
 
-    std::string decoded_path;
-    if (false) {
-      decoded_path = Http::PathUtil::decodeAsciiPrintableChars(path);
-    } else {
-      decoded_path = Http::Utility::PercentEncoding::decode(path);
+    if (percentDecodeInput()) {
+      std::string decoded_path;
+      if (false) {
+        decoded_path = Http::PathUtil::decodeAsciiPrintableChars(path);
+      } else {
+        decoded_path = Http::Utility::PercentEncoding::decode(path);
+      }
+
+      absl::string_view temp_view(decoded_path.c_str());
+      path.swap(temp_view);
+      printf("matching decoded path: %s\n", std::string(path).c_str());
     }
 
-    absl::string_view temp_view(decoded_path.c_str());
-    path.swap(temp_view);
-
-    printf("matching decoded path: %s\n", std::string(path).c_str());
     if (regex_->match(path)) {
       return clusterEntry(headers, random_value);
     }

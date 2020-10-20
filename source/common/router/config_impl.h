@@ -902,9 +902,12 @@ public:
   void rewritePathHeader(Http::RequestHeaderMap& headers,
                          bool insert_envoy_original_path) const override;
 
+  bool percentDecodeInput() const { return percent_decode_input_; }
+
 private:
   Regex::CompiledMatcherPtr regex_;
   std::string regex_str_;
+  bool percent_decode_input_{false};
 };
 
 /**
