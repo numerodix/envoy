@@ -156,6 +156,7 @@ TEST_F(PathUtilityTest, DecodeAsciiPrintableChars) {
   EXPECT_EQ("abcdefghijklmnopqrstuvwxyz", decode("abcdefghijklmnopqrstuvwxyz"));
   EXPECT_EQ(ascii_printables, decode(ascii_printables));
   EXPECT_EQ(ascii_non_printables, decode(ascii_non_printables));
+  // should include 128-255 too?
 
   // ASCII printable chars encoded - should be decoded to ASCII
   EXPECT_EQ("0123456789", decode("%30%31%32%33%34%35%36%37%38%39"));
@@ -175,6 +176,10 @@ TEST_F(PathUtilityTest, DecodeAsciiPrintableChars) {
   EXPECT_EQ(
       "abcdefghijklmnopqrstuvwxyz",
       decode("%61%62%63%64%65%66%67%68%69%6A%6B%6C%6D%6E%6F%70%71%72%73%74%75%76%77%78%79%7A"));
+  // ascii printables in encoded form
+  EXPECT_EQ(
+      ascii_printables,
+      decode("%20%21%22%23%24%25%26%27%28%29%2A%2B%2C-./%3A%3B%3C%3D%3E%3F%40%5B%5C%5D%5E_%60%7B%7C%7D~"));
 
   // ASCII non-printable chars encoded - should be preserved as is
   // x00 - x1f + x7f: lower case hex chars
