@@ -140,6 +140,9 @@ TEST_F(PathUtilityTest, DecodeAsciiPrintableChars) {
 
   // every printable char that is not alphanum
   const std::string ascii_printables{R"( !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~)"};
+  // x00 - x1f + x7f
+  const std::string ascii_non_printables{
+      R"(\x0\x1\x2\x3\x4\x5\x6\x7\x8\x9\xa\xb\xc\xd\xe\xf\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f\x7f)"};
 
   // Corner cases
   EXPECT_EQ("", decode(""));
@@ -147,12 +150,12 @@ TEST_F(PathUtilityTest, DecodeAsciiPrintableChars) {
   EXPECT_EQ("%2f", decode("%2f"));
   EXPECT_EQ("%2F", decode("%2F"));
 
-  // ASCII printable chars as literals - should be echoed verbatim
+  // ASCII chars as literals - should be echoed verbatim
   EXPECT_EQ("0123456789", decode("0123456789"));
   EXPECT_EQ("ABCDEFGHIJKLMNOPQRSTUVWXYZ", decode("ABCDEFGHIJKLMNOPQRSTUVWXYZ"));
   EXPECT_EQ("abcdefghijklmnopqrstuvwxyz", decode("abcdefghijklmnopqrstuvwxyz"));
   EXPECT_EQ(ascii_printables, decode(ascii_printables));
-  // NOTE: ascii non printables not covered because we do not expect to see them as literals
+  EXPECT_EQ(ascii_non_printables, decode(ascii_non_printables));
 
   // ASCII printable chars encoded - should be decoded to ASCII
   EXPECT_EQ("0123456789", decode("%30%31%32%33%34%35%36%37%38%39"));
